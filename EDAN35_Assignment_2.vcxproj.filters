@@ -1,0 +1,352 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\External">
+      <UniqueIdentifier>{a595b7b1-65a9-4a68-a489-8940e5e1bc1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External\ImGui">
+      <UniqueIdentifier>{d61491a5-753c-4d6b-a058-d0a890e3f48f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External\GL3W">
+      <UniqueIdentifier>{d9a462cd-726d-45ff-a2e5-70f342541469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External\GL">
+      <UniqueIdentifier>{b80a093c-82e3-47a4-92ef-1dda0b9440e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Assignment">
+      <UniqueIdentifier>{5f246713-0056-49f6-8fe8-be0a8a8749c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{fb3a57f6-d926-4e7b-b910-773f06ebd43b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Math">
+      <UniqueIdentifier>{59757887-56c7-49be-b0f6-80fb9d079c3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Rendering">
+      <UniqueIdentifier>{30b2339c-368f-4742-aefa-9af8305e9ed2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{f164df2b-e816-4368-b195-f8dc581f69ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\GLS State Inspector">
+      <UniqueIdentifier>{de42658c-3341-4ec1-a413-4f8c0855ac48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Profiler">
+      <UniqueIdentifier>{74e639e6-a247-4f19-bc44-e3c17e6cb09c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Logger">
+      <UniqueIdentifier>{20543019-c77d-40f2-bd98-1343a7edff79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{50b11d94-1c0d-4655-b3ec-b1f28c30fc2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Assignment">
+      <UniqueIdentifier>{29583b6c-0588-4575-a706-3d87e72e945c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External\lodepng">
+      <UniqueIdentifier>{06be8ae2-9069-44bb-a5c1-d76c5433721b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Window">
+      <UniqueIdentifier>{25558a5f-240f-4f04-a231-642d85e6f9ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Scene Handling">
+      <UniqueIdentifier>{0a4f0cdf-bf80-41cd-9234-1dfa631573a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Scene Handling\Scene Graph">
+      <UniqueIdentifier>{b192b570-9495-48c0-b5f0-84ac63c39b89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core\Scene Handling\Meshes">
+      <UniqueIdentifier>{9f984066-1383-439e-a239-d03a1cda5fa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Simple Draw">
+      <UniqueIdentifier>{f366ed40-4e45-473b-9479-a2aad8b71a43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Simple Draw">
+      <UniqueIdentifier>{3c39790a-1c5d-4dd0-a5b6-6765827d7162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Project">
+      <UniqueIdentifier>{f5336c45-554a-478a-b2d7-101b4e9f64b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Geometry Example">
+      <UniqueIdentifier>{6efb4f61-a354-446a-bbb0-4506ad06a700}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\imgui_impl_glfw_gl3.cpp">
+      <Filter>Source Files\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gl3w.cpp">
+      <Filter>Source Files\External\GL3W</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Deferred.cpp">
+      <Filter>Source Files\Assignment</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Types.cpp">
+      <Filter>Source Files\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VectorMath.cpp">
+      <Filter>Source Files\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLBdecl.cpp">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderState.cpp">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ObjReader.cpp">
+      <Filter>Source Files\Core\Scene Handling\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructDesc.cpp">
+      <Filter>Source Files\Core\Scene Handling\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLB.cpp">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLStateInspection.cpp">
+      <Filter>Source Files\Tools\GLS State Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLStateInspectionView.cpp">
+      <Filter>Source Files\Tools\GLS State Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Profiler.cpp">
+      <Filter>Source Files\Tools\Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ProfilerView.cpp">
+      <Filter>Source Files\Tools\Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Log.cpp">
+      <Filter>Source Files\Tools\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LogView.cpp">
+      <Filter>Source Files\Tools\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lodepng.cpp">
+      <Filter>Source Files\External\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputHandler.cpp">
+      <Filter>Source Files\Core\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>Source Files\Core\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SimpleDraw.cpp">
+      <Filter>Source Files\Tools\Simple Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SimpleText.cpp">
+      <Filter>Source Files\Tools\Simple Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Bonobo.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Testing.cpp">
+      <Filter>Source Files\Geometry Example</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain.cpp">
+      <Filter>Source Files\Project</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\imgui_impl_glfw_gl3.h">
+      <Filter>Source Files\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GL\gl3w.h">
+      <Filter>Source Files\External\GL3W</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GL\glcorearb.h">
+      <Filter>Source Files\External\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Deferred.h">
+      <Filter>Source Files\Assignment</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AABox.h">
+      <Filter>Source Files\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types.h">
+      <Filter>Source Files\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VectorMath.h">
+      <Filter>Source Files\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLB.h">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLBdecl.h">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderState.h">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry.h">
+      <Filter>Source Files\Core\Scene Handling\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ObjReader.h">
+      <Filter>Source Files\Core\Scene Handling\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StructDesc.h">
+      <Filter>Source Files\Core\Scene Handling\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hierarchy.h">
+      <Filter>Source Files\Core\Scene Handling\Scene Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TRSTransform.h">
+      <Filter>Source Files\Core\Scene Handling\Scene Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLStateInspection.h">
+      <Filter>Source Files\Tools\GLS State Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLStateInspectionView.h">
+      <Filter>Source Files\Tools\GLS State Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Profiler.h">
+      <Filter>Source Files\Tools\Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ProfilerView.h">
+      <Filter>Source Files\Tools\Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Log.h">
+      <Filter>Source Files\Tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LogView.h">
+      <Filter>Source Files\Tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lodepng.h">
+      <Filter>Source Files\External\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputHandler.h">
+      <Filter>Source Files\Core\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.h">
+      <Filter>Source Files\Core\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FPSCamera.h">
+      <Filter>Source Files\Core\Scene Handling</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SimpleDraw.h">
+      <Filter>Source Files\Tools\Simple Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SimpleText.h">
+      <Filter>Source Files\Tools\Simple Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Bonobo.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BuildSettings.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Testing.h">
+      <Filter>Source Files\Geometry Example</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain.h">
+      <Filter>Source Files\Project</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\AABox.inl">
+      <Filter>Source Files\Core\Math</Filter>
+    </None>
+    <None Include="src\Types.inl">
+      <Filter>Source Files\Core\Math</Filter>
+    </None>
+    <None Include="src\VectorMath.matimpl.inl">
+      <Filter>Source Files\Core\Math</Filter>
+    </None>
+    <None Include="src\VectorMath.vecimpl.inl">
+      <Filter>Source Files\Core\Math</Filter>
+    </None>
+    <None Include="src\GLDataFormats.inl">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </None>
+    <None Include="src\GLTextureFormats.inl">
+      <Filter>Source Files\Core\Rendering</Filter>
+    </None>
+    <None Include="src\Hierarchy.inl">
+      <Filter>Source Files\Core\Scene Handling\Scene Graph</Filter>
+    </None>
+    <None Include="src\TRSTransform.inl">
+      <Filter>Source Files\Core\Scene Handling\Scene Graph</Filter>
+    </None>
+    <None Include="shaders\accumulate_lights.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\accumulate_lights.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\fill_gbuffer.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\fill_gbuffer.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\fill_shadowmap.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\fill_shadowmap.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\resolve_deferred.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\resolve_deferred.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\ArrayToMs.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\MsToArray.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\Simple.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\Simple.vert">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleSprite.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleSprite.vert">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleTextured.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleTextured.vert">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleTexturedArray.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\SimpleTexturedMS.frag">
+      <Filter>Resource Files\Shaders\Simple Draw</Filter>
+    </None>
+    <None Include="src\FPSCamera.inl">
+      <Filter>Source Files\Core\Scene Handling</Filter>
+    </None>
+    <None Include="src\SimpleDraw.inl">
+      <Filter>Source Files\Tools\Simple Draw</Filter>
+    </None>
+    <None Include="shaders\terrain_gen.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\terrain_gen.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CABF7716-EC44-4A33-A540-959B234D0D6A}</ProjectGuid>
+    <RootNamespace>EDAN35_Assignment_2</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>STANDALONE_VERSION;SHADERS_DIR=R"?($(ProjectDir)shaders\)?";RESOURCES_DIR=R"?($(ProjectDir)res\)?";_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjDir)include;$(SolutionDir)externals\imgui\include;$(SolutionDir)externals\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\imgui.lib;$(SolutionDir)$(Configuration)\glfw3.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>STANDALONE_VERSION;SHADERS_DIR=R"?($(ProjectDir)shaders\)?";RESOURCES_DIR=R"?($(ProjectDir)res\)?";_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjDir)include;$(SolutionDir)externals\imgui\include;$(SolutionDir)externals\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\imgui.lib;$(SolutionDir)$(Configuration)\glfw3.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Bonobo.cpp" />
+    <ClCompile Include="src\Deferred.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\gl3w.cpp" />
+    <ClCompile Include="src\GLB.cpp" />
+    <ClCompile Include="src\GLBdecl.cpp" />
+    <ClCompile Include="src\GLStateInspection.cpp" />
+    <ClCompile Include="src\GLStateInspectionView.cpp" />
+    <ClCompile Include="src\imgui_impl_glfw_gl3.cpp" />
+    <ClCompile Include="src\InputHandler.cpp" />
+    <ClCompile Include="src\lodepng.cpp" />
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\LogView.cpp" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Misc.cpp" />
+    <ClCompile Include="src\ObjReader.cpp" />
+    <ClCompile Include="src\Profiler.cpp" />
+    <ClCompile Include="src\ProfilerView.cpp" />
+    <ClCompile Include="src\RenderState.cpp" />
+    <ClCompile Include="src\SimpleDraw.cpp" />
+    <ClCompile Include="src\SimpleText.cpp" />
+    <ClCompile Include="src\StructDesc.cpp" />
+    <ClCompile Include="src\Terrain.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Testing.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Types.cpp" />
+    <ClCompile Include="src\VectorMath.cpp" />
+    <ClCompile Include="src\Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\GL\gl3w.h" />
+    <ClInclude Include="include\GL\glcorearb.h" />
+    <ClInclude Include="src\AABox.h" />
+    <ClInclude Include="src\Bonobo.h" />
+    <ClInclude Include="src\BuildSettings.h" />
+    <ClInclude Include="src\Deferred.h" />
+    <ClInclude Include="src\FPSCamera.h" />
+    <ClInclude Include="src\Geometry.h" />
+    <ClInclude Include="src\GLB.h" />
+    <ClInclude Include="src\GLBdecl.h" />
+    <ClInclude Include="src\GLStateInspection.h" />
+    <ClInclude Include="src\GLStateInspectionView.h" />
+    <ClInclude Include="src\Hierarchy.h" />
+    <ClInclude Include="src\imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="src\InputHandler.h" />
+    <ClInclude Include="src\lodepng.h" />
+    <ClInclude Include="src\Log.h" />
+    <ClInclude Include="src\LogView.h" />
+    <ClInclude Include="src\Misc.h" />
+    <ClInclude Include="src\ObjReader.h" />
+    <ClInclude Include="src\Profiler.h" />
+    <ClInclude Include="src\ProfilerView.h" />
+    <ClInclude Include="src\RenderState.h" />
+    <ClInclude Include="src\SimpleDraw.h" />
+    <ClInclude Include="src\SimpleText.h" />
+    <ClInclude Include="src\StructDesc.h" />
+    <ClInclude Include="src\Terrain.h" />
+    <ClInclude Include="src\Testing.h" />
+    <ClInclude Include="src\TRSTransform.h" />
+    <ClInclude Include="src\Types.h" />
+    <ClInclude Include="src\VectorMath.h" />
+    <ClInclude Include="src\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\accumulate_lights.frag" />
+    <None Include="shaders\accumulate_lights.vert" />
+    <None Include="shaders\ArrayToMs.frag" />
+    <None Include="shaders\fill_gbuffer.frag" />
+    <None Include="shaders\fill_gbuffer.vert" />
+    <None Include="shaders\fill_shadowmap.frag" />
+    <None Include="shaders\fill_shadowmap.vert" />
+    <None Include="shaders\MsToArray.frag" />
+    <None Include="shaders\resolve_deferred.frag" />
+    <None Include="shaders\resolve_deferred.vert" />
+    <None Include="shaders\Simple.frag" />
+    <None Include="shaders\Simple.vert" />
+    <None Include="shaders\SimpleSprite.frag" />
+    <None Include="shaders\SimpleSprite.vert" />
+    <None Include="shaders\SimpleTextured.frag" />
+    <None Include="shaders\SimpleTextured.vert" />
+    <None Include="shaders\SimpleTexturedArray.frag" />
+    <None Include="shaders\SimpleTexturedMS.frag" />
+    <None Include="shaders\terrain_gen.frag" />
+    <None Include="shaders\terrain_gen.vert" />
+    <None Include="src\AABox.inl" />
+    <None Include="src\FPSCamera.inl" />
+    <None Include="src\GLDataFormats.inl" />
+    <None Include="src\GLTextureFormats.inl" />
+    <None Include="src\Hierarchy.inl" />
+    <None Include="src\SimpleDraw.inl" />
+    <None Include="src\TRSTransform.inl" />
+    <None Include="src\Types.inl" />
+    <None Include="src\VectorMath.matimpl.inl" />
+    <None Include="src\VectorMath.vecimpl.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="externals\GLFW\GLFW.vcxproj">
+      <Project>{1d393bc0-6f12-4a80-a7d1-fb237db853fe}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="externals\imgui\imgui.vcxproj">
+      <Project>{10b42897-f3d9-4ff4-aff7-29349f5213b3}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

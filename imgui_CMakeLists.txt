@@ -1,0 +1,73 @@
+# As we use the VERSION option---which was introduced in CMAKE 3.0---of the
+# project() command, set the minimum required version to 3.0.
+CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
+
+
+# Set the project name, versions and languages used.
+PROJECT (
+  imgui
+  VERSION 1.46
+  LANGUAGES CXX
+)
+
+
+# Set C++ flags
+#IF (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
+#  # clang and GCC do not default to C++11 by default, but MSVC seems to (and I
+#  # couldn't find the proper flag to enable C++11 on MSVC anyway).
+#  ADD_DEFINITIONS ("--std=c++14")
+#ENDIF ()
+#IF (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+#  ADD_DEFINITIONS ("-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic
+#  -Wno-documentation -fno-limit-debug-info -Wno-gnu-zero-variadic-macro-arguments")
+#ELSEIF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+#  ADD_DEFINITIONS ("-Wall -Wextra")
+#ENDIF ()
+
+
+# Set build type
+SET (CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo")
+IF (NOT CMAKE_BUILD_TYPE)
+  SET (
+    CMAKE_BUILD_TYPE
+    "Release"
+    CACHE STRING
+    "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}."
+    FORCE
+  )
+ENDIF (NOT CMAKE_BUILD_TYPE)
+SET_PROPERTY (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
+
+
+INCLUDE_DIRECTORIES ("${PROJECT_SOURCE_DIR}")
+
+
+# Compile the project and link the libraries
+SET (
+  CPP_SOURCES
+
+  imgui.cpp
+  imgui_draw.cpp
+)
+IF (WIN32)
+  ADD_LIBRARY (${PROJECT_NAME}dll STATIC ${CPP_SOURCES})
+ENDIF ()
+ADD_LIBRARY (${PROJECT_NAME} SHARED ${CPP_SOURCES})
+
+SET (
+  HEADER_SOURCES
+
+  imgui.h
+  imgui_internal.h
+  imconfig.h
+
+  stb_rect_pack.h
+  stb_textedit.h
+  stb_truetype.h
+)
+
+IF (WIN32)
+  INSTALL (TARGETS ${PROJECT_NAME}dll DESTINATION lib)
+ENDIF ()
+INSTALL (TARGETS ${PROJECT_NAME} DESTINATION lib)
+INSTALL (FILES ${HEADER_SOURCES} DESTINATION include)

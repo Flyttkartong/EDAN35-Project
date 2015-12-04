@@ -1,0 +1,5 @@
+#pragma once
+
+
+#define SHADERS_PATH(n)   "@SHADERS_DIR@/" n
+#define RESOURCES_PATH(n) "@RESOURCES_DIR@/" n
