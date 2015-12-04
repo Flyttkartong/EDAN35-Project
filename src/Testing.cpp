@@ -81,6 +81,8 @@ Testing::~Testing()
 
 void Testing::run()
 {
+	//Commit test
+
 	//
 	// Load the scene coming
 	//
