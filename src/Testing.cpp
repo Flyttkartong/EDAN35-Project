@@ -88,7 +88,7 @@ void Testing::run()
 	//
 	
 
-
+	
 	//
 	// Compute the scene bounding box to scale the camera speed, near and far plane accordingly
 	//
@@ -141,22 +141,63 @@ void Testing::run()
 	//
 	// Setup VAOs, VBOs and IBOs for the scene and cone meshes
 	//
+	//Create VAO
+
+	//bonobo::VAO *meshLambertVao = bonobo::loadVertexAttributeObject(*lambertShader, *meshVbo, mesh->mVertexDesc);
 
 
-	float points[] = {
+	float points[4*3] = {
 		-0.45f,  0.45f, 0.0f,
 		0.45f,  0.45f, 0.0f,
 		0.45f, -0.45f, 0.0f,
 		-0.45f, -0.45f, 0.0f
 	};
 
-	GLuint vbo;
+	//Generate and Bind Vertex Array Object
+	GLuint vao = 0u;;
+	glGenVertexArrays(1, &vao);
+	bonobo::checkForErrors();
+	glBindVertexArray(vao);
+	bonobo::checkForErrors();
+	
+	//Generate and bind Vertex Buffer Object
+	GLuint vbo = 0u;
+	GLint posAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
 	glGenBuffers(1, &vbo);
+	bonobo::checkForErrors();
 
+	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	bonobo::checkForErrors();
+	glBufferData(GL_ARRAY_BUFFER, 4*3*sizeof(float), points, GL_STATIC_DRAW);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	bonobo::checkForErrors();
+	glEnableVertexAttribArray(posAttrib);
+	bonobo::checkForErrors();
+	
+	glBindVertexArray(0u);
+	bonobo::checkForErrors();
+	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+	bonobo::checkForErrors();
 
-	bonobo::VAO *meshLambertVao = bonobo::loadVertexAttributeObject(*lambertShader, *meshVbo, mesh->mVertexDesc);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+
+
+
+	/*
+	GLuint coneVao = 0u, coneVbo = 0u;
+	GLsizei coneVerticesNb = 0;
+	coneVao = loadCone(coneVbo, coneVerticesNb, spotlightShader);
+	*/
+
+
+	//
+
+	//bonobo::VAO *meshLambertVao = bonobo::loadVertexAttributeObject(*lambertShader, *meshVbo, mesh->mVertexDesc);
 
 	//
 	// Setup FBOs
@@ -200,12 +241,9 @@ void Testing::run()
 
 
 	//Own stuff
-	//Create Vertex array
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao->mId);
+	
 
-	// Specify layout of point data
+	/*// Specify layout of point data
 	GLint posAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
 	
 	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -213,7 +251,7 @@ void Testing::run()
 
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);*/
 
 	//end of own stuff
 
@@ -245,7 +283,7 @@ void Testing::run()
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
-
+		
 
 		glDepthFunc(GL_LESS);
 
@@ -262,9 +300,16 @@ void Testing::run()
 		
 		
 
-		//glBindVertexArray(vao->mId);
+		glBindVertexArray(vao);
+		bonobo::checkForErrors();
 		glDrawArrays(GL_TRIANGLES, 0, 4);
-		//bonobo::drawFullscreen(*terrainShader);
+		bonobo::checkForErrors();
+		glBindVertexArray(0u);
+		bonobo::drawFullscreen(*terrainShader);
+		bonobo::checkForErrors();
+
+		printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
+		
 		
 		//
 		// Pass 1: Render scene into the g-buffer
@@ -323,7 +368,9 @@ void Testing::run()
 		lastTime = nowTime;
 	}
 
-	
+	glDeleteBuffers(1, &vbo);
+	bonobo::checkForErrors();
+	vbo = 0u;
 	glDeleteVertexArrays(1, &vao);
 	bonobo::checkForErrors();
 	vao = 0u;
