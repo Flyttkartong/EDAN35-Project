@@ -141,8 +141,7 @@ void Testing::run()
 	//
 	// Setup VAOs, VBOs and IBOs for the scene and cone meshes
 	//
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
+
 
 	float points[] = {
 		-0.45f,  0.45f, 0.0f,
@@ -151,18 +150,22 @@ void Testing::run()
 		-0.45f, -0.45f, 0.0f
 	};
 
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
+	bonobo::VAO *meshLambertVao = bonobo::loadVertexAttributeObject(*lambertShader, *meshVbo, mesh->mVertexDesc);
 
 	//
 	// Setup FBOs
 	//
-	bonobo::Texture *testTex = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
+	//bonobo::Texture *testTex = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
 
-	const bonobo::Texture *gbufferColorAttachments[1] = {testTex};
+	//const bonobo::Texture *gbufferColorAttachments[1] = {testTex};
 
-	bonobo::FBO *testingFbo = bonobo::loadFrameBufferObject(gbufferColorAttachments);
+//	bonobo::FBO *testingFbo = bonobo::loadFrameBufferObject(gbufferColorAttachments);
 
 	//
 	// Setup texture samplers
@@ -170,7 +173,7 @@ void Testing::run()
 	
 	
 
-	GLfloat borderColor[4] = { 1.0f, 0.0, 0.0f, 0.0f };
+	//GLfloat borderColor[4] = { 1.0f, 0.0, 0.0f, 0.0f };
 
 	
 
@@ -197,15 +200,16 @@ void Testing::run()
 
 
 	//Own stuff
-	//Create Vertax array
+	//Create Vertex array
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glBindVertexArray(vao->mId);
 
 	// Specify layout of point data
-	GLint posAttrib = glGetAttribLocation(terrainShader->mId, "pos");
+	GLint posAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
+	
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -247,7 +251,7 @@ void Testing::run()
 
 		//Own implenetation, Render directly to screen
 
-		bonobo::setRenderTarget(testingFbo, 0);
+		//bonobo::setRenderTarget(testingFbo, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -259,7 +263,8 @@ void Testing::run()
 		
 
 		//glBindVertexArray(vao->mId);
-		bonobo::drawFullscreen(*terrainShader);
+		glDrawArrays(GL_TRIANGLES, 0, 4);
+		//bonobo::drawFullscreen(*terrainShader);
 		
 		//
 		// Pass 1: Render scene into the g-buffer
