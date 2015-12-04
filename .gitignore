@@ -4,6 +4,7 @@
 # EDAN35 Project specific
 [Ee]xternals/
 [Rr]es/[Cc]rysponza/
+[Ss]rc/Main.cpp
 log.txt
 
 # User-specific files
