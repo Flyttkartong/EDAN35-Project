@@ -34,8 +34,8 @@
 #include "Window.h"
 
 
-#define RES_X           1600
-#define RES_Y            900
+#define RES_X			 640
+#define RES_Y            480
 #define SHADOWMAP_RES_X  512
 #define SHADOWMAP_RES_Y  512
 
