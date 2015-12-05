@@ -183,7 +183,7 @@ void Testing::run()
 		glDrawArrays(GL_POINTS, 0, 4);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
-		//bonobo::drawFullscreen(*testingShader);
+		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
 		bonobo::checkForErrors();
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
