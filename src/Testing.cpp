@@ -98,8 +98,8 @@ void Testing::run()
 
 	//
 	// Load all the shader programs used
-	std::string testingShaderNames[2] = { SHADERS_PATH("testing.vert"),		SHADERS_PATH("testing.frag") };
-	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 2);
+	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
+	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 
 	if (testingShader == nullptr) {
 		LogError("Failed to load testing shader\n");
@@ -183,7 +183,7 @@ void Testing::run()
 		glDrawArrays(GL_POINTS, 0, 4);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
-		bonobo::drawFullscreen(*testingShader);
+		//bonobo::drawFullscreen(*testingShader);
 		bonobo::checkForErrors();
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
