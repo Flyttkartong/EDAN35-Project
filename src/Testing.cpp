@@ -106,34 +106,43 @@ void Testing::run()
 		exit(-1);
 	}
 
-	float points[4*3] = {
-		-0.45f,  0.45f, 0.0f,
-		0.45f,  0.45f, 0.0f,
-		0.45f, -0.45f, 0.0f,
-		-0.45f, -0.45f, 0.0f
-	};
-
-	//Generate and Bind Vertex Array Object
-	GLuint vao = 0u;;
-	glGenVertexArrays(1, &vao);
-	bonobo::checkForErrors();
-	glBindVertexArray(vao);
-	bonobo::checkForErrors();
-	
 	//Generate and bind Vertex Buffer Object
 	GLuint vbo = 0u;
-	GLint posAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glGenBuffers(1, &vbo);
 	bonobo::checkForErrors();
+
+	float points[4*6] = {
+		-0.45f,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, // Red point
+		0.45f,  0.45f, 0.0f, 0.0f, 1.0f, 0.0f, // Green point
+		0.45f, -0.45f, 0.0f, 0.0f, 0.0f, 1.0f, // Blue point
+		-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f, // Yellow point
+	};
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	bonobo::checkForErrors();
-	glBufferData(GL_ARRAY_BUFFER, 4*3*sizeof(float), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 6 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//Generate and Bind Vertex Array Object
+	GLuint vao = 0u;
+	glGenVertexArrays(1, &vao);
 	bonobo::checkForErrors();
-	glEnableVertexAttribArray(posAttrib);
+	glBindVertexArray(vao);
+	bonobo::checkForErrors();	
+
+	//Vertex Attribute
+	GLint vertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
+	glEnableVertexAttribArray(vertexAttrib);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(vertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	bonobo::checkForErrors();
+
+	//Color Attribute
+	GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
+	glEnableVertexAttribArray(colorAttrib);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	bonobo::checkForErrors();
 	
 	glBindVertexArray(0u);
@@ -176,7 +185,6 @@ void Testing::run()
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
 		bonobo::setUniform(*testingShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-		bonobo::setUniform(*testingShader, "model_to_world_matrix", mat4f::Identity());
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
