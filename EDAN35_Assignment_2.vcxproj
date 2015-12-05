@@ -72,7 +72,7 @@
   <ItemGroup>
     <ClCompile Include="src\Bonobo.cpp" />
     <ClCompile Include="src\Deferred.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\gl3w.cpp" />
     <ClCompile Include="src\GLB.cpp" />
