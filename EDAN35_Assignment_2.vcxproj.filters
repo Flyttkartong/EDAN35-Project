@@ -348,5 +348,8 @@
     <None Include="shaders\testing.vert">
       <Filter>Resource Files\Shaders\Assignment</Filter>
     </None>
+    <None Include="shaders\testing.geo">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
   </ItemGroup>
 </Project>
