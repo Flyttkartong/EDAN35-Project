@@ -1464,7 +1464,7 @@ void bonobo::drawFullscreen(const bonobo::ShaderProgram &sp)
 
 	glBindVertexArray(vao->mId);
 	bonobo::bindVertexBufferObject(*glb_fullVBO, 0);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_POINTS, 0, 3); // Change this to GL_TRIANGLES when done with tutorial!!!
 	bonobo::checkForErrors();
 	glBindVertexArray(0);
 }
