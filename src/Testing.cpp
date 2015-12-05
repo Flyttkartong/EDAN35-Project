@@ -89,8 +89,8 @@ void Testing::run()
 	// NOTE: If the points don't show up at first, just press the left mouse button and they should appear. The camera orientation shouldn't need to be changed
 	// 
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 4.0f);
-	mCamera.mWorld.SetTranslate(v3f(0.f, 0.f, -2.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
-	mCamera.mRotation.x = fPI;// / 2.0f;
+	mCamera.mWorld.SetTranslate(v3f(0.f, 0.f, 2.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
+	mCamera.mRotation.x = 0;// / 2.0f;
 	mCamera.mWorld.SetRotateY(0);//fPI / 2.0f);
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
@@ -106,43 +106,51 @@ void Testing::run()
 		exit(-1);
 	}
 
-	//Generate and bind Vertex Buffer Object
+	// Generate and bind Vertex Buffer Object
 	GLuint vbo = 0u;
 	glGenBuffers(1, &vbo);
 	bonobo::checkForErrors();
 
-	float points[4*6] = {
-		-0.45f,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, // Red point
-		0.45f,  0.45f, 0.0f, 0.0f, 1.0f, 0.0f, // Green point
-		0.45f, -0.45f, 0.0f, 0.0f, 0.0f, 1.0f, // Blue point
-		-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f, // Yellow point
+	// vec3:Vertex, vec3:Color, float:Sides
+	float points[4*7] = {
+		-0.45f,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, 4.0f,
+		0.45f,  0.45f, 0.0f, 0.0f, 1.0f, 0.0f, 8.0f,
+		0.45f, -0.45f, 0.0f, 0.0f, 0.0f, 1.0f, 16.0f,
+		-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f, 32.0f,
 	};
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	bonobo::checkForErrors();
-	glBufferData(GL_ARRAY_BUFFER, 4 * 6 * sizeof(float), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 7 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
 
-	//Generate and Bind Vertex Array Object
+	// Generate and Bind Vertex Array Object
 	GLuint vao = 0u;
 	glGenVertexArrays(1, &vao);
 	bonobo::checkForErrors();
 	glBindVertexArray(vao);
 	bonobo::checkForErrors();	
 
-	//Vertex Attribute
+	// Vertex Attribute
 	GLint vertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glEnableVertexAttribArray(vertexAttrib);
 	bonobo::checkForErrors();
-	glVertexAttribPointer(vertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	glVertexAttribPointer(vertexAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), 0);
 	bonobo::checkForErrors();
 
-	//Color Attribute
+	// Color Attribute
 	GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
 	glEnableVertexAttribArray(colorAttrib);
 	bonobo::checkForErrors();
-	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+	bonobo::checkForErrors();
+
+	// Color Attribute
+	GLint sidesAttrib = glGetAttribLocation(testingShader->mId, "Sides");
+	glEnableVertexAttribArray(sidesAttrib);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6 * sizeof(float)));
 	bonobo::checkForErrors();
 	
 	glBindVertexArray(0u);
@@ -150,7 +158,7 @@ void Testing::run()
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 
-	//glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
+	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
 	glEnable(GL_CULL_FACE);
 
 
