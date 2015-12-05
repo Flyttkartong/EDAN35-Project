@@ -156,8 +156,8 @@
     <None Include="shaders\SimpleTextured.vert" />
     <None Include="shaders\SimpleTexturedArray.frag" />
     <None Include="shaders\SimpleTexturedMS.frag" />
-    <None Include="shaders\terrain_gen.frag" />
-    <None Include="shaders\terrain_gen.vert" />
+    <None Include="shaders\testing.frag" />
+    <None Include="shaders\testing.vert" />
     <None Include="src\AABox.inl" />
     <None Include="src\FPSCamera.inl" />
     <None Include="src\GLDataFormats.inl" />
