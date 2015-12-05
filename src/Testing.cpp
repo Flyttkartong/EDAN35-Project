@@ -98,9 +98,9 @@ void Testing::run()
 
 	//
 	// Load all the shader programs used
-	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"), SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag")};
-	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
-	
+	std::string testingShaderNames[2] = { SHADERS_PATH("testing.vert"),		SHADERS_PATH("testing.frag") };
+	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 2);
+
 	if (testingShader == nullptr) {
 		LogError("Failed to load testing shader\n");
 		exit(-1);
@@ -176,7 +176,7 @@ void Testing::run()
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
 		bonobo::setUniform(*testingShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-		//bonobo::setUniform(*testingShader, "model_to_world_matrix", mat4f::Identity());
+		bonobo::setUniform(*testingShader, "model_to_world_matrix", mat4f::Identity());
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
