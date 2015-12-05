@@ -50,7 +50,7 @@ Testing::Testing(int argc, const char* argv[])
 {
 	Log::View::Init();
 
-	window = Window::Create("Awesome Super Duper Mega Terrain Generator 9001", RES_X, RES_Y, MSAA_RATE, false);
+	window = Window::Create("Geometry Shader Test", RES_X, RES_Y, MSAA_RATE, false);
 	inputHandler = new InputHandler();
 	window->SetInputHandler(inputHandler);
 
@@ -98,11 +98,11 @@ void Testing::run()
 
 	//
 	// Load all the shader programs used
-	std::string terrainShaderNames[2] = { SHADERS_PATH("terrain_gen.vert"),		SHADERS_PATH("terrain_gen.frag") };
-	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 2);
+	std::string testingShaderNames[2] = { SHADERS_PATH("testing.vert"),		SHADERS_PATH("testing.frag") };
+	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 2);
 
-	if (terrainShader == nullptr) {
-		LogError("Failed to load terrain shader\n");
+	if (testingShader == nullptr) {
+		LogError("Failed to load testing shader\n");
 		exit(-1);
 	}
 
@@ -122,7 +122,7 @@ void Testing::run()
 	
 	//Generate and bind Vertex Buffer Object
 	GLuint vbo = 0u;
-	GLint posAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
+	GLint posAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glGenBuffers(1, &vbo);
 	bonobo::checkForErrors();
 
@@ -170,20 +170,20 @@ void Testing::run()
 		//glDepthFunc(GL_LESS);
 
 		//bonobo::setRenderTarget(testingFbo, 0);
-		glUseProgram(terrainShader->mId);
+		glUseProgram(testingShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
-		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-		bonobo::setUniform(*terrainShader, "model_to_world_matrix", mat4f::Identity());
+		bonobo::setUniform(*testingShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+		bonobo::setUniform(*testingShader, "model_to_world_matrix", mat4f::Identity());
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
 		glDrawArrays(GL_POINTS, 0, 4);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
-		bonobo::drawFullscreen(*terrainShader);
+		bonobo::drawFullscreen(*testingShader);
 		bonobo::checkForErrors();
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
