@@ -112,17 +112,17 @@ void Testing::run()
 	bonobo::checkForErrors();
 
 	// vec3:Vertex, vec3:Color, float:Sides
-	float points[4*7] = {
-		-0.45f,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, 4.0f,
-		0.45f,  0.45f, 0.0f, 0.0f, 1.0f, 0.0f, 8.0f,
-		0.45f, -0.45f, 0.0f, 0.0f, 0.0f, 1.0f, 16.0f,
-		-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f, 32.0f,
+	float points[3*6] = {
+		0.0,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, //4.0f,
+		-0.45f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, //8.0f,
+		0.45f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, //16.0f,
+		//-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f//, 32.0f,
 	};
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	bonobo::checkForErrors();
-	glBufferData(GL_ARRAY_BUFFER, 4 * 7 * sizeof(float), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 6 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
 
 	// Generate and Bind Vertex Array Object
@@ -136,23 +136,26 @@ void Testing::run()
 	GLint vertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glEnableVertexAttribArray(vertexAttrib);
 	bonobo::checkForErrors();
-	glVertexAttribPointer(vertexAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), 0);
+	glVertexAttribPointer(vertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 	bonobo::checkForErrors();
 
 	// Color Attribute
 	GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
 	glEnableVertexAttribArray(colorAttrib);
 	bonobo::checkForErrors();
-	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	bonobo::checkForErrors();
 
+
+	/*
 	// Color Attribute
 	GLint sidesAttrib = glGetAttribLocation(testingShader->mId, "Sides");
 	glEnableVertexAttribArray(sidesAttrib);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6 * sizeof(float)));
 	bonobo::checkForErrors();
-	
+	*/
+
 	glBindVertexArray(0u);
 	bonobo::checkForErrors();
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
@@ -196,7 +199,7 @@ void Testing::run()
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
-		glDrawArrays(GL_POINTS, 0, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
