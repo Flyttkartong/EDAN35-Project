@@ -28,7 +28,7 @@ void main(){
 	fColor = gs_in[0].Color;
 	gl_Position =  gl_in[0].gl_Position; //ordinariy point, first
 	EmitVertex();
-
+/*
 	fColor = vec3(1.0f,1.0f,1.0f);
 	gl_Position =  (gl_in[0].gl_Position+gl_in[1].gl_Position)/2+zerooneBytwo; //offset downwards
 	EmitVertex();
@@ -40,24 +40,24 @@ void main(){
 	EmitVertex();
 
 	gl_Position =  (gl_in[0].gl_Position+gl_in[1].gl_Position)/2+zerooneBytwo; //offset downwards
-	EmitVertex();
+	EmitVertex();*/
 
 	fColor = gs_in[1].Color;
 	gl_Position =  gl_in[1].gl_Position; //ordinariy point, third
 	EmitVertex();
 
-	fColor = vec3(1.0f,1.0f,1.0f);
+	/*fColor = vec3(1.0f,1.0f,1.0f);
 	gl_Position =  (gl_in[1].gl_Position+gl_in[2].gl_Position)/2+onetwoBytwo; //offset downwards
 	EmitVertex();
-
+*/
 	fColor = gs_in[2].Color;
 	gl_Position =  gl_in[2].gl_Position; //ordinariy point, third
 	EmitVertex();
-
+/*
 	fColor = vec3(1.0f,1.0f,1.0f);
 	gl_Position =  (gl_in[0].gl_Position+gl_in[2].gl_Position)/2+zerotwoBytwo ; //offset right/upwards
 	EmitVertex();
-
+*/
 	EndPrimitive();
 
 }

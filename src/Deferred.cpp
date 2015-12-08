@@ -220,6 +220,7 @@ void Deferred::run()
 	//
 	// Setup FBOs
 	//
+
 	bonobo::Texture *rtDiffuse             = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
 	bonobo::Texture *rtSpecular            = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
 	bonobo::Texture *rtNormalSpecular      = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);

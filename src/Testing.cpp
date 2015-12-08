@@ -100,6 +100,9 @@ void Testing::run()
 	//Generate FBO and storing texture
 	bonobo::Texture *rtTestMap = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
 	bonobo::Texture *rtDepthTexture = bonobo::loadTexture(nullptr, RES_X, RES_Y, 0, 0, 1, 0, bonobo::TEXTURE_FLOAT_DEPTH, v4i(32, 0, 0, 0));
+	//bonobo::Texture *rtTestMap3d = bonobo::loadTexture3D((const u8*)300, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Y, bonobo::TEXTURE_UNORM,v4i(8,8,8,8));
+	
+
 	const bonobo::Texture *gTest[1] = { rtTestMap };
 
 	bonobo::FBO *TestFBO = bonobo::loadFrameBufferObject(gTest,1, rtDepthTexture);
@@ -124,25 +127,26 @@ void Testing::run()
 
 	// vec3:Vertex, vec3:Color, float:Sides
 	float points[4*6] = {
-		0.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, //4.0f,
+		-1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, //4.0f,
 		1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, //8.0f,
-		1.0f,  0.f, 0.0f, 0.0f, 0.0f, 1.0f , //16.0f,
-		0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.0f// 32.0f,
+		1.0f,  -1.0f, 0.0f, 0.0f, 0.0f, 1.0f , //16.0f,
+		-1.0f,  -1.0f, 0.0f, 1.0f, 1.0f, 0.0f// 32.0f,
 	};
 
-	GLint indicies[] = {
+	GLint indicies[6] = {
+		
+		0, 2, 3,
 		2, 1, 0,
-		2, 0, 3
 	};
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	bonobo::checkForErrors();
-	glBufferData(GL_ARRAY_BUFFER, 3 * 6 * sizeof(float), points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 6 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	bonobo::checkForErrors();
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(indicies), indicies, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
 
 
@@ -181,7 +185,7 @@ void Testing::run()
 	bonobo::checkForErrors();
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 
 	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
@@ -220,7 +224,7 @@ void Testing::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
-		bonobo::setUniform(*testingShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+		bonobo::setUniform(*testingShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
