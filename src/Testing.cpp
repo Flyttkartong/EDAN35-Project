@@ -110,13 +110,21 @@ void Testing::run()
 	GLuint vbo = 0u;
 	glGenBuffers(1, &vbo);
 	bonobo::checkForErrors();
+	GLuint ibo = 0u;
+	glGenBuffers(1, &ibo);
+	bonobo::checkForErrors();
 
 	// vec3:Vertex, vec3:Color, float:Sides
-	float points[3*6] = {
-		0.0,  0.45f, 0.0f, 1.0f, 0.0f, 0.0f, //4.0f,
-		-0.45f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, //8.0f,
-		0.45f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, //16.0f,
-		//-0.45f, -0.45f, 0.0f, 1.0f, 1.0f, 0.0f//, 32.0f,
+	float points[4*6] = {
+		0.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, //4.0f,
+		1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, //8.0f,
+		1.0f,  0.f, 0.0f, 0.0f, 0.0f, 1.0f , //16.0f,
+		0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.0f// 32.0f,
+	};
+
+	GLint indicies[] = {
+		2, 1, 0,
+		2, 0, 3
 	};
 
 	// Specify layout of point data
@@ -124,6 +132,11 @@ void Testing::run()
 	bonobo::checkForErrors();
 	glBufferData(GL_ARRAY_BUFFER, 3 * 6 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	bonobo::checkForErrors();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
+	bonobo::checkForErrors();
+
 
 	// Generate and Bind Vertex Array Object
 	GLuint vao = 0u;
@@ -159,6 +172,8 @@ void Testing::run()
 	glBindVertexArray(0u);
 	bonobo::checkForErrors();
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+	bonobo::checkForErrors();
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 
 	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
@@ -199,7 +214,12 @@ void Testing::run()
 		
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+	
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		bonobo::checkForErrors();
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
@@ -221,6 +241,11 @@ void Testing::run()
 	glDeleteBuffers(1, &vbo);
 	bonobo::checkForErrors();
 	vbo = 0u;
+	glDeleteBuffers(1, &ibo);
+	bonobo::checkForErrors();
+	ibo = 0u;
+
+
 	glDeleteVertexArrays(1, &vao);
 	bonobo::checkForErrors();
 	vao = 0u;
