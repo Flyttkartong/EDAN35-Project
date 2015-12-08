@@ -546,7 +546,7 @@ void Deferred::run()
 
 		bonobo::checkForErrors();
 
-		GLStateInspection::View::Render();
+		//GLStateInspection::View::Render();
 		//Log::View::Render();
 		ImGui::Render();
 

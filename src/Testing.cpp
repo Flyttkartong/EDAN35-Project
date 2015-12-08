@@ -34,10 +34,10 @@
 #include "Window.h"
 
 
-#define RES_X			 640
-#define RES_Y            480
-#define SHADOWMAP_RES_X  512
-#define SHADOWMAP_RES_Y  512
+#define RES_X			 1600
+#define RES_Y            900
+#define DENSITY_RES_X  32
+#define DENSITY_RES_Y  32
 
 #define MSAA_RATE	             1
 #define LIGHT_INTENSITY     240000.0f
@@ -95,6 +95,14 @@ void Testing::run()
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
 
+
+
+	//Generate FBO and storing texture
+	bonobo::Texture *rtTestMap = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
+	bonobo::Texture *rtDepthTexture = bonobo::loadTexture(nullptr, RES_X, RES_Y, 0, 0, 1, 0, bonobo::TEXTURE_FLOAT_DEPTH, v4i(32, 0, 0, 0));
+	const bonobo::Texture *gTest[1] = { rtTestMap };
+
+	bonobo::FBO *TestFBO = bonobo::loadFrameBufferObject(gTest,1, rtDepthTexture);
 
 	//
 	// Load all the shader programs used
@@ -204,7 +212,9 @@ void Testing::run()
 
 		//glDepthFunc(GL_LESS);
 
-		//bonobo::setRenderTarget(testingFbo, 0);
+
+		//Pass one testing
+		bonobo::setRenderTarget(TestFBO, 0);
 		glUseProgram(testingShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -218,6 +228,8 @@ void Testing::run()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		bonobo::checkForErrors();
 
+		GLStateInspection::CaptureSnapshot("Testing");
+
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		bonobo::checkForErrors();
@@ -227,10 +239,40 @@ void Testing::run()
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
 
+
+		//Pass two 
+		bonobo::setRenderTarget(0, 0);
+		glUseProgram(testingShader->mId);
+		glViewport(0, 0, RES_X, RES_Y);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		bonobo::checkForErrors();
+		bonobo::setUniform(*testingShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+
+		glBindVertexArray(vao);
+		bonobo::checkForErrors();
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		bonobo::checkForErrors();
+
+		GLStateInspection::CaptureSnapshot("Testing");
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		bonobo::checkForErrors();
+		glBindVertexArray(0u);
+		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
+		bonobo::checkForErrors();
+
+
 		//GLStateInspection::CaptureSnapshot("Resolve Pass");
 		bonobo::checkForErrors();
 
-		//GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
+
+		//output stuff
+		gSimpleDraw.Texture(v2f(-0.95f, -0.95f), v2f(-0.55f, -0.55f), *rtTestMap, v4i(0, 1, 2, -1));
+
+		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
 		//Log::View::Render();
 		ImGui::Render();
 
