@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 10) out;
@@ -11,7 +11,6 @@ in VS_OUT {
 } gs_in[];
 
 out vec3 fColor;
-
 
 
 const float PI = 3.1415926;
@@ -59,6 +58,7 @@ void main(){
 	EmitVertex();
 */
 	EndPrimitive();
+
 
 }
 
