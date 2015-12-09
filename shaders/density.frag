@@ -1,6 +1,8 @@
 #version 430
 
-in vec3 fColor;
+in int gl_layer;
+
+layout(location=gl_layer) out;
 
 out float density;
 
