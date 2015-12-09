@@ -96,28 +96,6 @@ void Testing::run()
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
 
-	//// Create 3D texture
-	//GLuint tex;
-	//glGenTextures(1, &tex);
-	//glBindTexture(GL_TEXTURE_3D, tex);
-	//glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, 33, 33, 33, 0, GL_RED, GL_DEPTH, NULL);
-	//glBindTexture(GL_TEXTURE_3D, 0);
-
-	//bonobo::Texture *rtTestTexture3D = new bonobo::Texture();
-	//rtTestTexture3D->mId = tex;
-	//rtTestTexture3D->mTarget = bonobo::TEXTURE_3D;
-
-	//// Create FBO and bind 3D texture to it
-	//GLuint fbo;
-	//glGenFramebuffers(1, &fbo);
-	//glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex, 32);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//bonobo::FBO *texture3DFbo = new bonobo::FBO();
-	//texture3DFbo->mId = fbo;
-	//texture3DFbo->mDepthAttachment = rtTestTexture3D;
-
 
 	//-------------------------Bonobo version----------------------------------
 
@@ -129,11 +107,17 @@ void Testing::run()
 
 	//
 	// Load all the shader programs used
+	std::string densityShaderNames[2] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.frag") };
 	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
+	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 2);
 	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 
 	if (testingShader == nullptr) {
 		LogError("Failed to load testing shader\n");
+		exit(-1);
+	}
+	if (densityShader == nullptr) {
+		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
 
@@ -177,6 +161,13 @@ void Testing::run()
 	bonobo::checkForErrors();
 
 	// Vertex Attribute
+	GLint densityVertexAttrib = glGetAttribLocation(densityShader->mId, "Vertex");
+	glEnableVertexAttribArray(densityVertexAttrib);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(densityVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	bonobo::checkForErrors();
+
+	// Vertex Attribute
 	GLint vertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glEnableVertexAttribArray(vertexAttrib);
 	bonobo::checkForErrors();
@@ -189,16 +180,6 @@ void Testing::run()
 	bonobo::checkForErrors();
 	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	bonobo::checkForErrors();
-
-
-	/*
-	// Color Attribute
-	GLint sidesAttrib = glGetAttribLocation(testingShader->mId, "Sides");
-	glEnableVertexAttribArray(sidesAttrib);
-	bonobo::checkForErrors();
-	glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6 * sizeof(float)));
-	bonobo::checkForErrors();
-	*/
 
 	glBindVertexArray(0u);
 	bonobo::checkForErrors();
@@ -238,12 +219,12 @@ void Testing::run()
 
 		//Pass one testing
 		bonobo::setRenderTarget(texture3DFbo, 0);
-		glUseProgram(testingShader->mId);
+		glUseProgram(densityShader->mId);
 		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
-		bonobo::setUniform(*testingShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
+		bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
 
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();

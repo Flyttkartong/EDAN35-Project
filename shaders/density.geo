@@ -1,13 +1,16 @@
 #version 430
 
-layout(triangles, invocations = 32) in;
+layout(triangles) in;
 
 layout(triangle_strip, max_vertices = 10) out;
 
-out int gl_layer;
+flat in int InstanceID[3];
+
+//flat out int gl_Layer;
 
 void main(){
-	vec4 z_offset = vec4(0, 0, (float) gl_InvocationID, 0);
+	vec4 z_offset = vec4(0.0f, 0.0f, 1.0f/*(float) gl_InvocationID*/, 0.0f);
+	gl_Layer=(int) InstanceID[0]; //gl_InvocationID;
 	
 	//Generating triangles, counterclockwise
 
@@ -21,7 +24,7 @@ void main(){
 	EmitVertex();
 	
 	//Select layer
-	gl_layer=gl_invocationID;
+	
 	
 	EndPrimitive();
 }
