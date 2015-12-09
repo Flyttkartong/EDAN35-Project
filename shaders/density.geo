@@ -9,8 +9,10 @@ flat in int InstanceID[3];
 //flat out int gl_Layer;
 
 void main(){
+	
+	float conv= float() 
 	vec4 z_offset = vec4(0.0f, 0.0f, 1.0f/*(float) gl_InvocationID*/, 0.0f);
-	gl_Layer=(int) InstanceID[0]; //gl_InvocationID;
+	gl_Layer= InstanceID[0]; //gl_InvocationID;
 	
 	//Generating triangles, counterclockwise
 

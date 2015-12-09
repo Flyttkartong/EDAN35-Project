@@ -1113,7 +1113,7 @@ bonobo::FBO *bonobo::loadFrameBufferObject(const std::vector<const bonobo::Textu
 	if (colorAttachments) {
 		unsigned int i = 0;
 		for (auto it = colorAttachments->begin(); it != colorAttachments->end(); ++it, i++) {
-			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mId, 0);
+			glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mTarget, (*it)->mId, 0, 32);
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mTarget, (*it)->mId, 0);
 			GL_CHECK_ERRORS();
 			GLint result = glCheckFramebufferStatus(GL_FRAMEBUFFER);

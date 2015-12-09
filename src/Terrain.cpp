@@ -217,7 +217,7 @@ void Testing::run()
 		//glDepthFunc(GL_LESS);
 
 
-		//Pass one testing
+		//Generate Density function
 		bonobo::setRenderTarget(texture3DFbo, 0);
 		glUseProgram(densityShader->mId);
 		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
