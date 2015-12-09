@@ -36,8 +36,9 @@
 
 #define RES_X			 1600
 #define RES_Y            900
-#define DENSITY_RES_X  32
-#define DENSITY_RES_Y  32
+#define DENSITY_RES_X  33
+#define DENSITY_RES_Y  33
+#define DENSITY_RES_Z  33
 
 #define MSAA_RATE	             1
 #define LIGHT_INTENSITY     240000.0f
@@ -95,17 +96,36 @@ void Testing::run()
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
 
+	//// Create 3D texture
+	//GLuint tex;
+	//glGenTextures(1, &tex);
+	//glBindTexture(GL_TEXTURE_3D, tex);
+	//glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, 33, 33, 33, 0, GL_RED, GL_DEPTH, NULL);
+	//glBindTexture(GL_TEXTURE_3D, 0);
 
+	//bonobo::Texture *rtTestTexture3D = new bonobo::Texture();
+	//rtTestTexture3D->mId = tex;
+	//rtTestTexture3D->mTarget = bonobo::TEXTURE_3D;
+
+	//// Create FBO and bind 3D texture to it
+	//GLuint fbo;
+	//glGenFramebuffers(1, &fbo);
+	//glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex, 32);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//bonobo::FBO *texture3DFbo = new bonobo::FBO();
+	//texture3DFbo->mId = fbo;
+	//texture3DFbo->mDepthAttachment = rtTestTexture3D;
+
+
+	//-------------------------Bonobo version----------------------------------
 
 	//Generate FBO and storing texture
-	bonobo::Texture *rtTestMap = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
-	bonobo::Texture *rtDepthTexture = bonobo::loadTexture(nullptr, RES_X, RES_Y, 0, 0, 1, 0, bonobo::TEXTURE_FLOAT_DEPTH, v4i(32, 0, 0, 0));
-	//bonobo::Texture *rtTestMap3d = bonobo::loadTexture3D((const u8*)300, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Y, bonobo::TEXTURE_UNORM,v4i(8,8,8,8));
-	
-
-	const bonobo::Texture *gTest[1] = { rtTestMap };
-
-	bonobo::FBO *TestFBO = bonobo::loadFrameBufferObject(gTest,1, rtDepthTexture);
+	//bonobo::Texture *rtTestMap = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
+	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32,0,0,0), 0);
+	const bonobo::Texture *gTest[1] = { rtTestTexture3D };
+	bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
 
 	//
 	// Load all the shader programs used
@@ -134,8 +154,7 @@ void Testing::run()
 	};
 
 	GLint indicies[6] = {
-		
-		0, 2, 3,
+		3, 2, 0,
 		2, 1, 0,
 	};
 
@@ -218,9 +237,9 @@ void Testing::run()
 
 
 		//Pass one testing
-		bonobo::setRenderTarget(TestFBO, 0);
+		bonobo::setRenderTarget(texture3DFbo, 0);
 		glUseProgram(testingShader->mId);
-		glViewport(0, 0, RES_X, RES_Y);
+		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
@@ -274,7 +293,7 @@ void Testing::run()
 
 
 		//output stuff
-		gSimpleDraw.Texture(v2f(-0.95f, -0.95f), v2f(-0.55f, -0.55f), *rtTestMap, v4i(0, 1, 2, -1));
+		//gSimpleDraw.Texture(v2f(-0.95f, -0.95f), v2f(-0.55f, -0.55f), *rtTestTexture3D, v4i(0, 1, 2, -1));
 
 		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
 		//Log::View::Render();

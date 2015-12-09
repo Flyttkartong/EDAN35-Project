@@ -1113,7 +1113,8 @@ bonobo::FBO *bonobo::loadFrameBufferObject(const std::vector<const bonobo::Textu
 	if (colorAttachments) {
 		unsigned int i = 0;
 		for (auto it = colorAttachments->begin(); it != colorAttachments->end(); ++it, i++) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mTarget, (*it)->mId, 0);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mId, 0);
+			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (*it)->mTarget, (*it)->mId, 0);
 			GL_CHECK_ERRORS();
 			GLint result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (result != GL_FRAMEBUFFER_COMPLETE) {
@@ -1125,8 +1126,10 @@ bonobo::FBO *bonobo::loadFrameBufferObject(const std::vector<const bonobo::Textu
 	}
 	if (depthAttachment) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLenum) depthAttachment->mTarget, depthAttachment->mId, 0);
+		//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthAttachment->mId, 0);
 		GL_CHECK_ERRORS();
 		GLint result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		printf("result = %d\n", (int) result);
 		if (result != GL_FRAMEBUFFER_COMPLETE) {
 			LogWarning("Failed to create frame buffer object");
 			// TODO: Destroy?
