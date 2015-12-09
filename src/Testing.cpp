@@ -254,7 +254,7 @@ void Testing::run()
 		GLStateInspection::CaptureSnapshot("Testing");
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 32);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)

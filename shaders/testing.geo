@@ -1,6 +1,7 @@
 #version 430
 
 layout(triangles) in;
+
 layout(triangle_strip, max_vertices = 10) out;
 
 //in vec3 vColor[];
@@ -20,7 +21,6 @@ void main(){
 	vec4 zerotwoBytwo = vec4(0.0f,0.0f,0.0f,0.0f);//vec4(0.0f,0.0f,0.2f,0.0f);
 	vec4 zerooneBytwo = vec4(0.0f,0.0f,0.0f,0.0f);//vec4(0.0f,0.0f,-0.2f,0.0f);
 	vec4 onetwoBytwo = vec4(0.0f,0.0f,0.0f,0.0f);//vec4(0.0f,0.0f,0.3f,0.0f);
-	
 
 	//Generating triangles, counterclockwise
 
