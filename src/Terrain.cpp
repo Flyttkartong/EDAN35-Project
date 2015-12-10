@@ -109,9 +109,9 @@ void Terrain::run()
 
 	//
 	// Load all the shader programs used
-	std::string densityShaderNames[3] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.geo"), SHADERS_PATH("density.frag") };
-	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"), SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
-	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 3);
+	std::string densityShaderNames[2] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.frag") };
+	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
+	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 2);
 	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 
 	if (densityShader == nullptr) {
@@ -120,6 +120,10 @@ void Terrain::run()
 	}
 	if (testingShader == nullptr) {
 		LogError("Failed to load testing shader\n");
+		exit(-1);
+	}
+	if (densityShader == nullptr) {
+		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
 
@@ -209,7 +213,6 @@ void Terrain::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		//glDepthFunc(GL_LESS);
-
 
 		//Pass 1: Generate Density Function
 		bonobo::setRenderTarget(texture3DFbo, 0);

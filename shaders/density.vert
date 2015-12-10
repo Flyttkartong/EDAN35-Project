@@ -4,8 +4,6 @@ uniform mat4 model_to_clip_matrix;
 
 in vec3 Vertex;
 
-//flat out int instance_id;
-
 out VS_OUT {
 	int instance_id;
 } vs_out;

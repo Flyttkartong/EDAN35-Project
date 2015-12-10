@@ -11,7 +11,6 @@ layout(triangle_strip, max_vertices = 3) out;
 out vec4 pos;
 
 void main(){
-	//Generating triangles, counterclockwise
 	gl_Position =  gl_in[0].gl_Position; //ordinariy point, first
 	pos = gl_Position;
 	EmitVertex();
