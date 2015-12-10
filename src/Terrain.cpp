@@ -117,6 +117,7 @@ void Terrain::run()
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
 
 	bonobo::setUniform(*terrainShader, "LookupTable", createLookupTable());
+	
 
 	if (densityShader == nullptr) {
 		LogError("Failed to load density shader\n");
@@ -175,6 +176,8 @@ void Terrain::run()
 			}
 		}
 	}
+
+	bonobo::setUniform(*terrainShader, "OriginVertex", originPoint);
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
