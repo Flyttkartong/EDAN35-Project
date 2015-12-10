@@ -381,9 +381,9 @@ void Terrain::run()
 }
 
 
-int* Terrain::createLookupTable() 
+bonobo::Texture* Terrain::createLookupTable() 
 {
-	int faces[] =
+	int faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -642,5 +642,11 @@ int* Terrain::createLookupTable()
 		0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	};
-	return faces;
+	bonobo::Texture *facesTexture;
+	facesTexture = bonobo::loadTexture1D(256 * 15, bonobo::TEXTURE_UNORM, v4i(32, 0, 0, 0));
+	for (int i = 0; i < 256 * 15; i++) 
+	{
+		facesTexture[i] = faces[i];
+	}
+	return facesTexture;
 }

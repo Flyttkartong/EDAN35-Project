@@ -15,7 +15,7 @@ void main()
 	vec4 origo = gl_In[0].gl_position;
 	float offset = 1.0f;
 
-	// Offset coordinates. ORDER IMPORTANT! See GPU Gems 3, ch 1
+	// Offset coordinates. ORDER IMPORTANT!
 	vec4 pos[8];
 	pos[0] = origo + vec4(	0.0f, 	0.0f, 	0.0f, 	0.0f);
 	pos[1] = origo + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
@@ -26,31 +26,30 @@ void main()
 	pos[6] = origo + vec4(	offset, offset, offset, 0.0f);
 	pos[7] = origo + vec4(	0.0f, 	offset, offset, 0.0f);
 	
-	// Represent edges as index pairs
-	
-	//Create data structure
-	struct edgePair
+	// Create data structure
+	struct vertexPair
 	{
 		int a;
 		int b;
 	}
 	
-	edgePair e[12];
-	e[0] = edgePair(0, 1);
-	e[1] = edgePair(1, 2);
-	e[2] = edgePair(2, 3);
-	e[3] = edgePair(3, 0);
-	e[4] = edgePair(4, 5);
-	e[5] = edgePair(5, 6);
-	e[6] = edgePair(6, 7);
-	e[7] = edgePair(7, 4);
-	e[8] = edgePair(0, 4);
-	e[9] = edgePair(1, 5);
-	e[10]= edgePair(3, 7);
-	e[11]= edgePair(2, 6); 
+	// Represent edges as vertex index pairs
+	vertexPair e[12];
+	e[0] = vertexPair(0, 1);
+	e[1] = vertexPair(1, 2);
+	e[2] = vertexPair(2, 3);
+	e[3] = vertexPair(3, 0);
+	e[4] = vertexPair(4, 5);
+	e[5] = vertexPair(5, 6);
+	e[6] = vertexPair(6, 7);
+	e[7] = vertexPair(7, 4);
+	e[8] = vertexPair(0, 4);
+	e[9] = vertexPair(1, 5);
+	e[10]= vertexPair(3, 7);
+	e[11]= vertexPair(2, 6); 
 	
 	
-	// Create sample points by offsetting by origin. ORDER IMPORTANT! See GPU Gems 3, ch 1
+	// Create sample points by offsetting by origin.
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
@@ -72,20 +71,41 @@ void main()
 	// Offset case number to get the correct index for faces
 	int case_index = case_nbr * 15;
 	
-	// Fetch edges from faces
-	edgePair edges[5];
-	
-	for(int i = 0; i < 15; i+=3) 
+	// Fetch edge index from faces and get vertex pair from e
+	vertexPair edges[15];
+	int edge_index;
+	int nbr_edges = 15;
+	for(int i = 0; i < 15; i++) 
 	{
-		triangle_points[index] = vec4(face[case_index + i], face[case_index + i + 1], face[case_index + i + 2], 0.0f);
-		index++;
+		edge_index = faces[case_index + i];
+		if(edge_index != -1) 
+		{
+			edges[i] = e[edge_index];
+		}
+		else
+		{
+			nbr_edges = i; // We encountered -1, update nbr_edges
+			break;
+		}
 	}
 	
-	// Output vertices
-	for(int i = 0; i < 5; i++) 
+	// Interpolate vertex positions and output primitives
+	for(int i = 0; i < nbr_edges; i++)
 	{
-		// Do 3 times: EmitVertex()
-		// EndPrimitive()
+		vec4 a = pos[edges[i].a];
+		vec4 b = pos[edges[i].b];
+		float a_density = densities[edges[i].a];
+		float b_density = densities[edges[i].b];
+		
+		float b_weight = abs(b_density)/abs(a_density - b_density);
+		float a_weight = abs(a_density)/abs(a_density - b_density);
+		gl_Position = a * a_weight + b * b_weight;
+		
+		EmitVertex();
+		
+		if(i % 3 == 0) // Done with one triangle
+		{
+			EndPrimitive();
+		}
 	}
-	
 }
