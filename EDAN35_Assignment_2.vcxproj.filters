@@ -351,5 +351,14 @@
     <None Include="shaders\testing.geo">
       <Filter>Resource Files\Shaders\Assignment</Filter>
     </None>
+    <None Include="shaders\density.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\density.geo">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\density.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
   </ItemGroup>
 </Project>

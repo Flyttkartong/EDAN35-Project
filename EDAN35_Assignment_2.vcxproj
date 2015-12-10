@@ -141,6 +141,9 @@
     <None Include="shaders\accumulate_lights.frag" />
     <None Include="shaders\accumulate_lights.vert" />
     <None Include="shaders\ArrayToMs.frag" />
+    <None Include="shaders\density.frag" />
+    <None Include="shaders\density.geo" />
+    <None Include="shaders\density.vert" />
     <None Include="shaders\fill_gbuffer.frag" />
     <None Include="shaders\fill_gbuffer.vert" />
     <None Include="shaders\fill_shadowmap.frag" />
