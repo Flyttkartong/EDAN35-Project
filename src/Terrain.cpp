@@ -51,7 +51,7 @@ Terrain::Terrain(int argc, const char* argv[])
 {
 	Log::View::Init();
 
-	window = Window::Create("Geometry Shader Test", RES_X, RES_Y, MSAA_RATE, false);
+	window = Window::Create("Geometry Shader babobiboo Test", RES_X, RES_Y, MSAA_RATE, false);
 	inputHandler = new InputHandler();
 	window->SetInputHandler(inputHandler);
 
@@ -177,6 +177,13 @@ void Terrain::run()
 	glEnableVertexAttribArray(testingVertexAttrib);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(testingVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	bonobo::checkForErrors();
+
+	// Color Attribute
+	GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
+	glEnableVertexAttribArray(colorAttrib);
+	bonobo::checkForErrors();
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	bonobo::checkForErrors();
 
 	glBindVertexArray(0u);
