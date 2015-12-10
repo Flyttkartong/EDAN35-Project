@@ -104,8 +104,8 @@ void Terrain::run()
 	//glEnable(GL_TEXTURE_3D);
 
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
-	const bonobo::Texture *gTest[1] = { rtTestTexture3D };
-	bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
+	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
+	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
 
 	//
 	// Load all the shader programs used
@@ -195,13 +195,70 @@ void Terrain::run()
 
 	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
 	glEnable(GL_CULL_FACE);
+	//int i = 1;
 
+
+	//create texture layer buffer whibbly whobbly stuffy thingi...
+	//for-loop for filling 3d texture
+	for (int i = 0; i < 33; i++) {
+		//Create layer fbo
+		GLuint fbo;
+		glGenFramebuffers(1, &fbo);
+		bonobo::checkForErrors();
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		bonobo::checkForErrors();
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtTestTexture3D->mId, 0, i);
+
+		//bind said fbo
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		bonobo::checkForErrors();
+
+		//draw buffer
+		glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0);
+		bonobo::checkForErrors();
+
+		//test fbo
+		int result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (result != GL_FRAMEBUFFER_COMPLETE)
+			LogWarning("Failed to bind FBO/RBO");
+		bonobo::checkForErrors();
+
+
+
+		//Pass 1: Generate Density Function
+		//bonobo::setRenderTarget(fbo, 0);
+		glUseProgram(densityShader->mId);
+		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		bonobo::checkForErrors();
+		bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
+
+		glBindVertexArray(vao);
+		bonobo::checkForErrors();
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		bonobo::checkForErrors();
+
+		//GLStateInspection::CaptureSnapshot("Terrain");
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		bonobo::checkForErrors();
+		glBindVertexArray(0u);
+		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
+		bonobo::checkForErrors();
+	}
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 	auto startTime = std::chrono::system_clock::now();
+
+
+
+
 
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		PROFILE("Main loop");
@@ -221,29 +278,6 @@ void Terrain::run()
 
 		//glDepthFunc(GL_LESS);
 
-		//Pass 1: Generate Density Function
-		bonobo::setRenderTarget(texture3DFbo, 0);
-		glUseProgram(densityShader->mId);
-		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		bonobo::checkForErrors();
-		bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
-
-		glBindVertexArray(vao);
-		bonobo::checkForErrors();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		bonobo::checkForErrors();
-
-		GLStateInspection::CaptureSnapshot("Terrain");
-
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 32);
-		bonobo::checkForErrors();
-		glBindVertexArray(0u);
-		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
-		bonobo::checkForErrors();
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
 

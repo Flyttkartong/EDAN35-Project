@@ -532,7 +532,7 @@ bonobo::ShaderProgram *bonobo::loadShaderProgram(const std::vector<bonobo::Shade
 		GL_CHECK_ERRORS();
 		bonobo::Location atr;
 		atr.mName = std::string(buf);
-		printf("%s\n", atr.mName.c_str()); // halp
+		//printf("%s\n", atr.mName.c_str()); // halp
 		atr.mLoc = glGetAttribLocation(handle->mId, buf);
 		GL_CHECK_ERRORS();
 		Assert(atr.mLoc != -1);
