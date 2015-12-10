@@ -1,12 +1,10 @@
 #version 430
 
-in int gl_layer;
+in vec4 pos;
 
-layout(location=gl_layer) out;
-
-out float density;
+out float density; // Do something with layout and gl_Layer
 
 void main()
 {
-	density = vec4(fColor, 1.0);
+	density = -pos.y;
 }

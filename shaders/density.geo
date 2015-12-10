@@ -1,27 +1,31 @@
 #version 430
 
-layout(triangles, invocations = 32) in;
+layout(triangles) in;
 
-layout(triangle_strip, max_vertices = 10) out;
+in VS_OUT {
+	int instance_id;
+} gs_in[];
 
-out int gl_layer;
+layout(triangle_strip, max_vertices = 3) out;
+
+out vec4 pos;
 
 void main(){
-	vec4 z_offset = vec4(0, 0, (float) gl_InvocationID, 0);
-	
 	//Generating triangles, counterclockwise
-
-	gl_Position =  gl_in[0].gl_Position + z_offset; //ordinariy point, first
+	gl_Position =  gl_in[0].gl_Position; //ordinariy point, first
+	pos = gl_Position;
 	EmitVertex();
 
-	gl_Position =  gl_in[1].gl_Position + z_offset; //ordinariy point, third
+	gl_Position =  gl_in[1].gl_Position; //ordinariy point, third
+	pos = gl_Position;
 	EmitVertex();
 	
-	gl_Position =  gl_in[2].gl_Position + z_offset; //ordinariy point, third
+	gl_Position =  gl_in[2].gl_Position; //ordinariy point, third
+	pos = gl_Position;
 	EmitVertex();
 	
 	//Select layer
-	gl_layer=gl_invocationID;
+	gl_Layer = gs_in[0].instance_id;
 	
 	EndPrimitive();
 }
