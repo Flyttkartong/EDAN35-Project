@@ -81,7 +81,7 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = texture3D(Density_texture, v[i].xyz).x;
+		densities[i] = texture3D(Density_texture, v[i]).x;
 		if(densities[i] >= 0) 
 		{
 			case_nbr += int(pow(2, i));
@@ -97,7 +97,7 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = int(texture1D(Faces_texture, case_index + i).x);
+		edge_index = int(12*(texture1D(Faces_texture, case_index + i).x) - 1);
 		if(edge_index != -1) 
 		{
 			edges[i][0] = e[edge_index][0];

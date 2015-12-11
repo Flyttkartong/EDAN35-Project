@@ -131,7 +131,11 @@ void Terrain::run()
 		exit(-1);
 	}
 
-	int *faces = createLookupTable();
+	float *faces = createLookupTable();
+	for (int i = 0; i < 256 * 15; i++)
+	{
+		faces[i] = (faces[i] + 1) / 12.0f;
+	}
 
 	glGenTextures(1, &facesTexture->mId);
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
@@ -320,7 +324,7 @@ void Terrain::run()
 		//GLStateInspection::CaptureSnapshot("Terrain");
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indices);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
@@ -375,7 +379,7 @@ void Terrain::run()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		bonobo::checkForErrors();
 
-		//GLStateInspection::CaptureSnapshot("Testing");
+		GLStateInspection::CaptureSnapshot("Terrain");
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_POINTS, nbr_voxelPoints, GL_UNSIGNED_INT, voxelPoints);
@@ -385,7 +389,7 @@ void Terrain::run()
 		bonobo::checkForErrors();
 
 
-		//GLStateInspection::CaptureSnapshot("Resolve Pass");
+		//GLStateInspection::CaptureSnapshot("Terrain");
 		//bonobo::checkForErrors();
 
 
@@ -414,9 +418,9 @@ void Terrain::run()
 }
 
 
-int * Terrain::createLookupTable() 
+float * Terrain::createLookupTable() 
 {
-	static int faces[256 * 15] =
+	static float faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
