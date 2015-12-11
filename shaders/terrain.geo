@@ -13,6 +13,7 @@ layout(triangle_strip, max_vertices = 15) out;
 
 void main()
 {
+	
 	vec4 origin = vec4(OriginVertexX, OriginVertexY, OriginVertexZ, 0.0f);
 	vec4 origo = gl_In[0].gl_position;
 	float offset = 1.0f;
@@ -33,7 +34,8 @@ void main()
 	{
 		int a;
 		int b;
-	}
+	};
+	
 	
 	// Represent edges as vertex index pairs
 	vertexPair e[12];
