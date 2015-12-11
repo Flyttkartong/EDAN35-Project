@@ -104,17 +104,7 @@ void Terrain::run()
 	//glEnable(GL_TEXTURE_3D);
 
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
-
-
 	bonobo::Texture *facesTexture = new bonobo::Texture();
-
-	glGenTextures(1, &facesTexture->mId);
-	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
-
-	int *faces=createLookupTable();
-
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_R8I, 256 * 15, 0, GL_RED_INTEGER, GL_INT, faces);
-
 
 	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
 	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
@@ -122,27 +112,59 @@ void Terrain::run()
 	//
 	// Load all the shader programs used
 	std::string densityShaderNames[2] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.frag") };
-	std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
+	//std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
 	std::string terrainShaderNames[3] = { SHADERS_PATH("terrain.vert"),	SHADERS_PATH("terrain.geo"), SHADERS_PATH("terrain.frag") };
 	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 2);
-	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
+	//bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
-
-	
-	
 
 	if (densityShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
-	if (testingShader == nullptr) {
+	/*if (testingShader == nullptr) {
 		LogError("Failed to load testing shader\n");
 		exit(-1);
-	}
+	}*/
 	if (terrainShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
+
+	int *faces = createLookupTable();
+
+	glGenTextures(1, &facesTexture->mId);
+	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
+
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R8I, 256 * 15, 0, GL_RED_INTEGER, GL_INT, faces);
+
+	facesTexture->mTarget = bonobo::TEXTURE_1D;
+
+	/*glGenTextures(1, &facesTexture->mId);
+	bonobo::checkForErrors();
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+	bonobo::checkForErrors();
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
+	bonobo::checkForErrors();
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_UNSIGNED_INT, faces);
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_1D, 0);*/
+
+	/*int *faces = createLookupTable();
+	const int FACES_SIZE = 256 * 15;
+
+	GLuint facesUBO;
+	glGenBuffers(1, &facesUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, facesUBO);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * FACES_SIZE, NULL, GL_DYNAMIC_DRAW);
+
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * FACES_SIZE, faces);
+
+	GLuint arrayBlockIdx = glGetUniformBlockIndex(terrainShader->mId, "arrayBlock");
+	glUniformBlockBinding(terrainShader->mId, arrayBlockIdx, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, facesUBO);*/
 
 	// Generate and bind Vertex Buffer Object
 	GLuint vbo = 0u;
@@ -173,7 +195,8 @@ void Terrain::run()
 
 	//Generate grid for shady business
 	const int voxelgridsize = 32;
-	float voxelPoints[voxelgridsize*voxelgridsize*voxelgridsize * 3];
+	const int nbr_voxelPoints = voxelgridsize*voxelgridsize*voxelgridsize * 3;
+	float voxelPoints[nbr_voxelPoints];
 	float originPoint[3] = { -1.0f,-1.0f,-1.0f };
 
 	for (int x = 0; x < voxelgridsize;x++)
@@ -188,11 +211,6 @@ void Terrain::run()
 			}
 		}
 	}
-
-	//Probably better way of doing this, but tired!!
-	bonobo::setUniform(*terrainShader, "OriginVertexX", originPoint[0]);
-	bonobo::setUniform(*terrainShader, "OriginVertexY", originPoint[1]);
-	bonobo::setUniform(*terrainShader, "OriginVertexZ", originPoint[2]);
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -222,11 +240,11 @@ void Terrain::run()
 	glVertexAttribPointer(densityVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 	bonobo::checkForErrors();
 
-	GLint testingVertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
+	/*GLint testingVertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
 	glEnableVertexAttribArray(testingVertexAttrib);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(testingVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-	bonobo::checkForErrors();
+	bonobo::checkForErrors();*/
 
 	GLint terrainVertexAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
 	glEnableVertexAttribArray(terrainVertexAttrib);
@@ -235,11 +253,11 @@ void Terrain::run()
 	bonobo::checkForErrors();
 
 	// Color Attribute
-	GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
-	glEnableVertexAttribArray(colorAttrib);
-	bonobo::checkForErrors();
-	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	bonobo::checkForErrors();
+	//GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
+	//glEnableVertexAttribArray(colorAttrib);
+	//bonobo::checkForErrors();
+	//glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	//bonobo::checkForErrors();
 
 	glBindVertexArray(0u);
 	bonobo::checkForErrors();
@@ -314,11 +332,6 @@ void Terrain::run()
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 	auto startTime = std::chrono::system_clock::now();
-
-
-
-
-
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		PROFILE("Main loop");
 		nowTime = GetTimeSeconds();
@@ -349,9 +362,12 @@ void Terrain::run()
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-
 		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *rtTestTexture3D, *sampler3D);
-		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 0, *facesTexture, *samplerFaces);
+		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *samplerFaces);
+		//Probably better way of doing this, but tired!!
+		bonobo::setUniform(*terrainShader, "OriginVertexX", originPoint[0]);
+		bonobo::setUniform(*terrainShader, "OriginVertexY", originPoint[1]);
+		bonobo::setUniform(*terrainShader, "OriginVertexZ", originPoint[2]);
 
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
@@ -362,7 +378,7 @@ void Terrain::run()
 		//GLStateInspection::CaptureSnapshot("Testing");
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_POINTS, nbr_voxelPoints, GL_UNSIGNED_INT, voxelPoints);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
@@ -370,7 +386,7 @@ void Terrain::run()
 
 
 		//GLStateInspection::CaptureSnapshot("Resolve Pass");
-		bonobo::checkForErrors();
+		//bonobo::checkForErrors();
 
 
 		//output stuff
