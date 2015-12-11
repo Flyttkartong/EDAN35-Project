@@ -13,21 +13,20 @@ layout(triangle_strip, max_vertices = 15) out;
 
 void main()
 {
-	
 	vec4 origin = vec4(OriginVertexX, OriginVertexY, OriginVertexZ, 0.0f);
-	vec4 origo = gl_In[0].gl_position;
+	vec4 vertex = gl_In[0].gl_position;
 	float offset = 1.0f;
 
-	// Offset coordinates. ORDER IMPORTANT!
+	// Offset vertex coordinate to get cube corners ORDER IMPORTANT!
 	vec4 pos[8];
-	pos[0] = origo + vec4(	0.0f, 	0.0f, 	0.0f, 	0.0f);
-	pos[1] = origo + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
-	pos[2] = origo + vec4(	offset, offset, 0.0f, 	0.0f);
-	pos[3] = origo + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
-	pos[4] = origo + vec4(	0.0f, 	0.0f, 	offset, 0.0f);
-	pos[5] = origo + vec4(	offset, 0.0f, 	offset, 0.0f);
-	pos[6] = origo + vec4(	offset, offset, offset, 0.0f);
-	pos[7] = origo + vec4(	0.0f, 	offset, offset, 0.0f);
+	pos[0] = vertex;
+	pos[1] = vertex + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
+	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
+	pos[3] = vertex + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
+	pos[4] = vertex + vec4(	0.0f, 	0.0f, 	offset, 0.0f);
+	pos[5] = vertex + vec4(	offset, 0.0f, 	offset, 0.0f);
+	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
+	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
 	
 	// Create data structure
 	struct vertexPair
