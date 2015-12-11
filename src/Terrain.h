@@ -1,6 +1,7 @@
 #pragma once
 
 
+
 class InputHandler;
 class Window;
 
@@ -10,7 +11,7 @@ public:
 	Terrain(int argc, const char* argv[]);
 	~Terrain();
 	void run();
-	int* createLookupTable();
+	int * createLookupTable();
 private:
 	InputHandler *inputHandler;
 	Window       *window;

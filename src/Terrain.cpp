@@ -104,6 +104,18 @@ void Terrain::run()
 	//glEnable(GL_TEXTURE_3D);
 
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
+
+
+	bonobo::Texture *facesTexture = new bonobo::Texture();
+
+	glGenTextures(1, &facesTexture->mId);
+	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
+
+	int *faces=createLookupTable();
+
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R8I, 256 * 15, 0, GL_RED_INTEGER, GL_INT, faces);
+
+
 	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
 	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
 
@@ -116,7 +128,7 @@ void Terrain::run()
 	bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
 
-	bonobo::setUniform(*terrainShader, "LookupTable", createLookupTable());
+	
 	
 
 	if (densityShader == nullptr) {
@@ -177,7 +189,10 @@ void Terrain::run()
 		}
 	}
 
-	bonobo::setUniform(*terrainShader, "OriginVertex", originPoint);
+	//Probably better way of doing this, but tired!!
+	bonobo::setUniform(*terrainShader, "OriginVertexX", originPoint[0]);
+	bonobo::setUniform(*terrainShader, "OriginVertexY", originPoint[1]);
+	bonobo::setUniform(*terrainShader, "OriginVertexZ", originPoint[2]);
 
 	// Specify layout of point data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -240,6 +255,7 @@ void Terrain::run()
 
 	//create testure sampler
 	bonobo::Sampler *sampler3D = bonobo::loadSampler();
+	bonobo::Sampler *samplerFaces = bonobo::loadSampler();
 
 	//create texture layer buffer whibbly whobbly stuffy thingi...
 	//for-loop for filling 3d texture
@@ -335,6 +351,7 @@ void Terrain::run()
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 
 		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *rtTestTexture3D, *sampler3D);
+		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 0, *facesTexture, *samplerFaces);
 
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
@@ -381,9 +398,9 @@ void Terrain::run()
 }
 
 
-bonobo::Texture* Terrain::createLookupTable() 
+int * Terrain::createLookupTable() 
 {
-	int faces[256 * 15] =
+	static int faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -642,11 +659,6 @@ bonobo::Texture* Terrain::createLookupTable()
 		0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	};
-	bonobo::Texture *facesTexture;
-	facesTexture = bonobo::loadTexture1D(256 * 15, bonobo::TEXTURE_UNORM, v4i(32, 0, 0, 0));
-	for (int i = 0; i < 256 * 15; i++) 
-	{
-		facesTexture[i] = faces[i];
-	}
-	return facesTexture;
+
+	return faces;
 }

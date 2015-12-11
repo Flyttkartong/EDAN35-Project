@@ -1,17 +1,19 @@
 #version 430
 
-uniform sampler3D density;
-uniform int faces[];
-uniform float OriginVertex[];
+uniform sampler3D Density_texture;
+uniform sampler1D Faces_texture;
+uniform float OriginVertexX;
+uniform float OriginVertexY;
+uniform float OriginVertexZ;
 
 layout(points) in;
 // We need tex_coord here...
 
-layout(triangles, max_vertices = 15) out;
+layout(triangle_strip, max_vertices = 15) out;
 
 void main()
 {
-	vec4 origin = vec4(OriginVertex[0], OriginVertex[1], OriginVertex[2], 0.0f);
+	vec4 origin = vec4(OriginVertexX, OriginVertexY, OriginVertexZ, 0.0f);
 	vec4 origo = gl_In[0].gl_position;
 	float offset = 1.0f;
 
@@ -34,7 +36,7 @@ void main()
 	}
 	
 	// Represent edges as vertex index pairs
-	vertexPair e[12];
+	vertexPair[] e[12];
 	e[0] = vertexPair(0, 1);
 	e[1] = vertexPair(1, 2);
 	e[2] = vertexPair(2, 3);
@@ -53,7 +55,7 @@ void main()
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
-		v[i] = pos[i] + origin;
+		v[i] = (pos[i] + origin).xyz;
 	}
 	
 	// Sample density value and create case number by converting from bit to int
@@ -61,7 +63,7 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = texture3D(v[i]);
+		densities[i] = texture(Density_texture,v[i].xyz);
 		if(densities[i] >= 0) 
 		{
 			case_nbr += pow(2, i);
@@ -77,7 +79,7 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = faces[case_index + i];
+		edge_index = texture(Faces_texture,case_index + i);
 		if(edge_index != -1) 
 		{
 			edges[i] = e[edge_index];
