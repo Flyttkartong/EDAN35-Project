@@ -35,7 +35,6 @@ void main()
 		int b;
 	};
 	
-	
 	// Represent edges as vertex index pairs
 	vertexPair e[12];
 	e[0] = vertexPair(0, 1);
@@ -51,12 +50,11 @@ void main()
 	e[10]= vertexPair(3, 7);
 	e[11]= vertexPair(2, 6); 
 	
-	
 	// Create sample points by offsetting by origin.
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
-		v[i] = (pos[i] + origin).xyz;
+		v[i] = (pos[i] - origin).xyz;
 	}
 	
 	// Sample density value and create case number by converting from bit to int
@@ -99,11 +97,10 @@ void main()
 		vec4 b = pos[edges[i].b];
 		float a_density = densities[edges[i].a];
 		float b_density = densities[edges[i].b];
-		
 		float b_weight = abs(b_density)/abs(a_density - b_density);
 		float a_weight = abs(a_density)/abs(a_density - b_density);
-		gl_Position = a * a_weight + b * b_weight;
 		
+		gl_Position = a * a_weight + b * b_weight;
 		EmitVertex();
 		
 		if(i % 3 == 0) // Done with one triangle
