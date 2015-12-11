@@ -36,7 +36,7 @@ void main()
 	}
 	
 	// Represent edges as vertex index pairs
-	vertexPair[] e[12];
+	vertexPair e[12];
 	e[0] = vertexPair(0, 1);
 	e[1] = vertexPair(1, 2);
 	e[2] = vertexPair(2, 3);
