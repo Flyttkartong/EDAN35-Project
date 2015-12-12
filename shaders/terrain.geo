@@ -6,6 +6,8 @@ const int FACES_SIZE = 256 * 15;
 	int faces[FACES_SIZE];
 };*/
 
+uniform mat4 model_to_clip_matrix;
+
 uniform sampler3D Density_texture;
 uniform sampler1D Faces_texture;
 uniform float OriginVertexX;
@@ -14,7 +16,7 @@ uniform float OriginVertexZ;
 
 layout(points) in;
 
-layout(triangle_strip, max_vertices = 15) out;
+layout(line_strip, max_vertices = 15) out;
 
 void main()
 {
@@ -33,6 +35,12 @@ void main()
 	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
 	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
 	
+	for(int i = 0; i < 8; i++) {
+		gl_Position = model_to_clip_matrix * pos[i];
+		EmitVertex();
+	}
+	EndPrimitive();
+	/*
 	// Create data structure for vertex index pairs
 	// struct vertexPair
 	// {
@@ -123,12 +131,12 @@ void main()
 		
 		// gl_Position = pos[edges[i].a] * abs(densities[edges[i].a])/abs(densities[edges[i].a] - densities[edges[i].b]) + pos[edges[i].b] * abs(densities[edges[i].b])/abs(densities[edges[i].a] - densities[edges[i].b]);
 		
-		gl_Position = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
+		gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
 		EmitVertex();
 		
 		if(i % 3 == 0) // Done with one triangle
 		{
 			EndPrimitive();
 		}
-	}
+	}*/
 }

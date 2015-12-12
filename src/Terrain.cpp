@@ -200,8 +200,8 @@ void Terrain::run()
 	glGenBuffers(1, &ibo);
 	bonobo::checkForErrors();
 
-	GLuint vboT = 0u;
-	glGenBuffers(1, &vboT);
+	GLuint vboTerrain = 0u;
+	glGenBuffers(1, &vboTerrain);
 	bonobo::checkForErrors();
 
 	// vec3:Vertex, vec3:Color, float:Sides
@@ -241,14 +241,21 @@ void Terrain::run()
 	bonobo::checkForErrors();
 	glBufferData(GL_ARRAY_BUFFER, 4 * 6 * sizeof(float), points, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Index buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	bonobo::checkForErrors();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(indices), indices, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
-	glBindBuffer(GL_ARRAY_BUFFER, vboT);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// Array buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vboTerrain);
 	bonobo::checkForErrors();
 	glBufferData(GL_ARRAY_BUFFER, voxelgridsize * voxelgridsize *voxelgridsize * 3 * sizeof(float), voxelPoints, GL_STATIC_DRAW);
-
+	bonobo::checkForErrors();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Generate and Bind Vertex Array Object
 	GLuint vao = 0u;
@@ -398,12 +405,23 @@ void Terrain::run()
 		/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		bonobo::checkForErrors();*/
 
-		GLStateInspection::CaptureSnapshot("Terrain");
+		glBindBuffer(GL_ARRAY_BUFFER, vboTerrain);
+		bonobo::checkForErrors();
+		glEnableVertexAttribArray(0);
+		bonobo::checkForErrors();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		bonobo::checkForErrors();
 
+		GLStateInspection::CaptureSnapshot("Terrain");
+		
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_POINTS, 0, nbr_voxelPoints);
 		bonobo::checkForErrors();
-		glBindVertexArray(0u);
+
+		glDisableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		//glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
 		bonobo::checkForErrors();
 
