@@ -105,6 +105,7 @@ void Terrain::run()
 
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
 	bonobo::Texture *facesTexture = new bonobo::Texture();
+	bonobo::Texture *densityTexture3D = new bonobo::Texture();
 
 	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
 	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
@@ -140,9 +141,28 @@ void Terrain::run()
 	glGenTextures(1, &facesTexture->mId);
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
 
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_R8I, 256 * 15, 0, GL_RED_INTEGER, GL_INT, faces);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_FLOAT, faces);
 
 	facesTexture->mTarget = bonobo::TEXTURE_1D;
+
+	float densityFunction3D[32][32][32];
+	for (int x = 0; x < 32; x++)
+	{
+		for (int y = 0; y < 32; y++)
+		{
+			for (int z = 0; z < 32; z++)
+			{
+				densityFunction3D[x][y][z] = -(y - 16.0f) / 32.0f + 0.5f;
+			}
+		}
+	}
+
+	glGenTextures(1, &densityTexture3D->mId);
+	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
+
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, 32, 32, 32, 0, GL_RED, GL_FLOAT, densityFunction3D);
+
+	densityTexture3D->mTarget = bonobo::TEXTURE_3D;
 
 	/*glGenTextures(1, &facesTexture->mId);
 	bonobo::checkForErrors();
@@ -274,62 +294,61 @@ void Terrain::run()
 	glEnable(GL_CULL_FACE);
 	//int i = 1;
 
-
 	//create testure sampler
 	bonobo::Sampler *sampler3D = bonobo::loadSampler();
 	bonobo::Sampler *samplerFaces = bonobo::loadSampler();
 
 	//create texture layer buffer whibbly whobbly stuffy thingi...
 	//for-loop for filling 3d texture
-	for (int i = 0; i < 33; i++) {
-		//Create layer fbo
-		GLuint fbo;
-		glGenFramebuffers(1, &fbo);
-		bonobo::checkForErrors();
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		bonobo::checkForErrors();
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtTestTexture3D->mId, 0, i);
+	//for (int i = 0; i < 33; i++) {
+	//	//Create layer fbo
+	//	GLuint fbo;
+	//	glGenFramebuffers(1, &fbo);
+	//	bonobo::checkForErrors();
+	//	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	//	bonobo::checkForErrors();
+	//	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtTestTexture3D->mId, 0, i);
 
-		//bind said fbo
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		bonobo::checkForErrors();
+	//	//bind said fbo
+	//	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	//	bonobo::checkForErrors();
 
-		//draw buffer
-		glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0);
-		bonobo::checkForErrors();
+	//	//draw buffer
+	//	glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0);
+	//	bonobo::checkForErrors();
 
-		//test fbo
-		int result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (result != GL_FRAMEBUFFER_COMPLETE)
-			LogWarning("Failed to bind FBO/RBO");
-		bonobo::checkForErrors();
+	//	//test fbo
+	//	int result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	//	if (result != GL_FRAMEBUFFER_COMPLETE)
+	//		LogWarning("Failed to bind FBO/RBO");
+	//	bonobo::checkForErrors();
 
 
 
-		//Pass 1: Generate Density Function
-		//bonobo::setRenderTarget(fbo, 0);
-		glUseProgram(densityShader->mId);
-		glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		bonobo::checkForErrors();
-		bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
+	//	//Pass 1: Generate Density Function
+	//	//bonobo::setRenderTarget(fbo, 0);
+	//	glUseProgram(densityShader->mId);
+	//	glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
+	//	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//	glClear(GL_COLOR_BUFFER_BIT);
+	//	bonobo::checkForErrors();
+	//	bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
 
-		glBindVertexArray(vao);
-		bonobo::checkForErrors();
+	//	glBindVertexArray(vao);
+	//	bonobo::checkForErrors();
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		bonobo::checkForErrors();
+	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	//	bonobo::checkForErrors();
 
-		//GLStateInspection::CaptureSnapshot("Terrain");
+	//	//GLStateInspection::CaptureSnapshot("Terrain");
 
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indices);
-		bonobo::checkForErrors();
-		glBindVertexArray(0u);
-		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
-		bonobo::checkForErrors();
-	}
+	//	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//	bonobo::checkForErrors();
+	//	glBindVertexArray(0u);
+	//	//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
+	//	bonobo::checkForErrors();
+	//}
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
@@ -366,7 +385,7 @@ void Terrain::run()
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *rtTestTexture3D, *sampler3D);
+		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *densityTexture3D, *sampler3D);
 		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *samplerFaces);
 		//Probably better way of doing this, but tired!!
 		bonobo::setUniform(*terrainShader, "OriginVertexX", originPoint[0]);
@@ -376,13 +395,13 @@ void Terrain::run()
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		bonobo::checkForErrors();
+		/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		bonobo::checkForErrors();*/
 
 		GLStateInspection::CaptureSnapshot("Terrain");
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_POINTS, nbr_voxelPoints, GL_UNSIGNED_INT, voxelPoints);
+		glDrawArrays(GL_POINTS, 0, nbr_voxelPoints);
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)

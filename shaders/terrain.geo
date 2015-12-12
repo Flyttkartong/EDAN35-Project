@@ -81,7 +81,7 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = texture3D(Density_texture, v[i]).x;
+		densities[i] = (texture3D(Density_texture, v[i]).x - 0.5f)*32;
 		if(densities[i] >= 0) 
 		{
 			case_nbr += int(pow(2, i));
