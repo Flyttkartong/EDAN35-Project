@@ -145,23 +145,32 @@ void Terrain::run()
 
 	facesTexture->mTarget = bonobo::TEXTURE_1D;
 
-	float densityFunction3D[32][32][32];
-	for (int x = 0; x < 32; x++)
+	const int densitySize = 33;
+	float densitySizeFloat = (float) densitySize;
+	float densityFunction3D[densitySize][densitySize][densitySize];
+	for (int x = 0; x < densitySize; x++)
 	{
-		for (int y = 0; y < 32; y++)
+		for (int y = 0; y < densitySize; y++)
 		{
-			for (int z = 0; z < 32; z++)
+			for (int z = 0; z < densitySize; z++)
 			{
-				densityFunction3D[x][y][z] = -(y - 16.0f) / 32.0f + 0.5f;
+				densityFunction3D[x][y][z] = y / densitySizeFloat;
 			}
 		}
 	}
 
 	glGenTextures(1, &densityTexture3D->mId);
+	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
-
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, 32, 32, 32, 0, GL_RED, GL_FLOAT, densityFunction3D);
-
+	bonobo::checkForErrors();
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	bonobo::checkForErrors();
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, densitySize, densitySize, densitySize, 0, GL_RED, GL_FLOAT, densityFunction3D);
+	bonobo::checkForErrors();
 	densityTexture3D->mTarget = bonobo::TEXTURE_3D;
 
 	/*glGenTextures(1, &facesTexture->mId);
@@ -221,7 +230,7 @@ void Terrain::run()
 	const int voxelgridsize = 32;
 	const int nbr_voxelPoints = voxelgridsize*voxelgridsize*voxelgridsize * 3;
 	float voxelPoints[nbr_voxelPoints];
-	float originPoint[3] = { -1.0f,-1.0f,-1.0f };
+	float originPoint[3] = { 0.0f,0.0f,0.0f };
 
 	for (int x = 0; x < voxelgridsize;x++)
 	{

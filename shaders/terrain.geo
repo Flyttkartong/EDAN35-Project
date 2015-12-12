@@ -1,10 +1,12 @@
 #version 430
 
-const int FACES_SIZE = 256 * 15;
+//const int FACES_SIZE = 256 * 15;
 
 /*layout (std140) uniform arrayBlock {
 	int faces[FACES_SIZE];
 };*/
+
+const float densitySizeFloat = 33.0f;
 
 uniform mat4 model_to_clip_matrix;
 
@@ -35,12 +37,6 @@ void main()
 	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
 	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
 	
-	for(int i = 0; i < 8; i++) {
-		gl_Position = model_to_clip_matrix * pos[i];
-		EmitVertex();
-	}
-	EndPrimitive();
-	/*
 	// Create data structure for vertex index pairs
 	// struct vertexPair
 	// {
@@ -89,13 +85,16 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = (texture3D(Density_texture, v[i]).x - 0.5f)*32;
-		if(densities[i] >= 0) 
+		densities[i] = (texture3D(Density_texture, vec3(8.0f, 8.0f, 8.0f)/*v[i]*/).x)*densitySizeFloat;
+		if(densities[i] > 0) 
 		{
 			case_nbr += int(pow(2, i));
+			gl_Position = model_to_clip_matrix * pos[i];
+			EmitVertex();
 		}
 	}
-	
+	EndPrimitive();
+	/*
 	// Offset case number to get the correct index for Faces_texture
 	int case_index = case_nbr * 15;
 	
