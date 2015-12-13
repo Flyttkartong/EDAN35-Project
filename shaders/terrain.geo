@@ -85,8 +85,8 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = (texture3D(Density_texture, vec3(8.0f, 8.0f, 8.0f)/*v[i]*/).x)*densitySizeFloat;
-		if(densities[i] > 0) 
+		densities[i] = (texture(Density_texture, v[i]).w)*densitySizeFloat;
+		if(densities[i] < 0.9f) 
 		{
 			case_nbr += int(pow(2, i));
 			gl_Position = model_to_clip_matrix * pos[i];
@@ -104,7 +104,7 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = int(12*(texture1D(Faces_texture, case_index + i).x) - 1);
+		edge_index = int(12*(texture1D(Faces_texture, case_index + i).w) - 1);
 		if(edge_index != -1) 
 		{
 			edges[i][0] = e[edge_index][0];

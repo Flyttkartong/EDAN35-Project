@@ -90,7 +90,7 @@ void Terrain::run()
 	// NOTE: If the points don't show up at first, just press the left mouse button and they should appear. The camera orientation shouldn't need to be changed
 	// 
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 4.0f);
-	mCamera.mWorld.SetTranslate(v3f(0.f, 0.f, 2.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
+	mCamera.mWorld.SetTranslate(v3f(10.f, 33.f, 20.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
 	mCamera.mRotation.x = 0;// / 2.0f;
 	mCamera.mWorld.SetRotateY(0);//fPI / 2.0f);
 	mCamera.mMouseSensitivity = 0.003f;
@@ -144,6 +144,7 @@ void Terrain::run()
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_FLOAT, faces);
 
 	facesTexture->mTarget = bonobo::TEXTURE_1D;
+	glBindTexture(GL_TEXTURE_1D, 0);
 
 	const int densitySize = 33;
 	float densitySizeFloat = (float) densitySize;
@@ -172,6 +173,7 @@ void Terrain::run()
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, densitySize, densitySize, densitySize, 0, GL_RED, GL_FLOAT, densityFunction3D);
 	bonobo::checkForErrors();
 	densityTexture3D->mTarget = bonobo::TEXTURE_3D;
+	glBindTexture(GL_TEXTURE_3D, 0);
 
 	/*glGenTextures(1, &facesTexture->mId);
 	bonobo::checkForErrors();
@@ -312,7 +314,7 @@ void Terrain::run()
 
 	//create testure sampler
 	bonobo::Sampler *sampler3D = bonobo::loadSampler();
-	bonobo::Sampler *samplerFaces = bonobo::loadSampler();
+	//bonobo::Sampler *samplerFaces = bonobo::loadSampler();
 
 	//create texture layer buffer whibbly whobbly stuffy thingi...
 	//for-loop for filling 3d texture
@@ -402,7 +404,7 @@ void Terrain::run()
 		bonobo::checkForErrors();
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *densityTexture3D, *sampler3D);
-		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *samplerFaces);
+		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *sampler3D);
 		//Probably better way of doing this, but tired!!
 		bonobo::setUniform(*terrainShader, "OriginVertexX", originPoint[0]);
 		bonobo::setUniform(*terrainShader, "OriginVertexY", originPoint[1]);
@@ -430,9 +432,15 @@ void Terrain::run()
 		glDisableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		glBindSampler(1u, 0u);
+		bonobo::checkForErrors();
+		glBindSampler(0u, 0u);
+		bonobo::checkForErrors();
+
 		//glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
 		bonobo::checkForErrors();
+
 
 
 		//GLStateInspection::CaptureSnapshot("Terrain");
@@ -450,7 +458,7 @@ void Terrain::run()
 		lastTime = nowTime;
 	}
 
-	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &vboTerrain);
 	bonobo::checkForErrors();
 	vbo = 0u;
 	glDeleteBuffers(1, &ibo);
