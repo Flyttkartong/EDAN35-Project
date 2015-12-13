@@ -132,15 +132,23 @@ void Terrain::run()
 		exit(-1);
 	}
 
-	float *faces = createLookupTable();
+	int *faces = createLookupTable();
 
-	glGenTextures(1, &facesTexture->mId);
+	const int facesSize = 256 * 15;
+	facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_UNORM, v4i(8, 0, 0, 0));
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
+	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, facesSize, GL_RED, GL_INT, facesTexture);
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_1D, 0);
+
+	/*glGenTextures(1, &facesTexture->mId);
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
 
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_FLOAT, faces);
 
 	facesTexture->mTarget = bonobo::TEXTURE_1D;
-	glBindTexture(GL_TEXTURE_1D, 0);
+	glBindTexture(GL_TEXTURE_1D, 0);*/
 
 	const int densitySize = 33;
 	float densitySizeFloat = (float) densitySize;
@@ -415,6 +423,7 @@ void Terrain::run()
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
+		glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *densityTexture3D, *sampler3D);
 		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *sampler3D);
@@ -451,6 +460,7 @@ void Terrain::run()
 		glBindSampler(0u, 0u);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_3D, 0);
+		glBindTexture(GL_TEXTURE_1D, 0);
 		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
 		bonobo::checkForErrors();
@@ -486,9 +496,9 @@ void Terrain::run()
 }
 
 
-float * Terrain::createLookupTable() 
+int * Terrain::createLookupTable() 
 {
-	static float faces[256 * 15] =
+	static int faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

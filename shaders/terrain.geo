@@ -1,24 +1,20 @@
 #version 430
 
-//const int FACES_SIZE = 256 * 15;
-
-/*layout (std140) uniform arrayBlock {
-	int faces[FACES_SIZE];
-};*/
-
 const float densitySizeFloat = 33.0f;
 
 uniform mat4 model_to_clip_matrix;
 
 uniform sampler3D Density_texture;
-uniform sampler1D Faces_texture;
+uniform isampler1D Faces_texture;
 uniform float OriginVertexX;
 uniform float OriginVertexY;
 uniform float OriginVertexZ;
 
 layout(points) in;
 
-layout(triangle_strip, max_vertices = 15) out;
+layout(line_strip, max_vertices = 15) out;
+
+out vec3 fColor;
 
 void main()
 {
@@ -63,7 +59,6 @@ void main()
 	// Sample density value in corners and create case number by converting from bit to int. ORDER IMPORTANT!
 	float densities[8];
 	int case_nbr = 0;
-	vec4 densityTestVec4;
 	for(int i = 0; i < 8; i++)
 	{
 		densities[i] = texture(Density_texture, v[i]).x;
@@ -74,7 +69,7 @@ void main()
 	}
 	
 	// Offset case number to get the correct index for Faces_texture
-	int case_index = case_nbr * 15;
+	int case_index = 0;// case_nbr * 15;
 	
 	// Fetch edge index from Faces_texture and get vertex pair from e
 	int edges[15][2];
@@ -82,11 +77,14 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = int(texture1D(Faces_texture, case_index + i).x);
+		edge_index = texelFetch(Faces_texture, case_index + i, 0).x;
 		if(edge_index != -1) 
 		{
-			edges[i][0] = e[edge_index][0];
-			edges[i][1] = e[edge_index][1];
+			gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
+			fColor = vec3(edge_index/11.f, 0, 0);
+			EmitVertex();
+			//edges[i][0] = e[edge_index][0];
+			//edges[i][1] = e[edge_index][1];
 		}
 		else
 		{
@@ -94,7 +92,8 @@ void main()
 			break;
 		}
 	}
-	
+	EndPrimitive();
+	/*
 	// Interpolate vertex positions and output primitives
 	for(int i = 0; i < nbr_edges; i++)
 	{
@@ -115,5 +114,5 @@ void main()
 		{
 			EndPrimitive();
 		}
-	}
+	}*/
 }
