@@ -133,10 +133,6 @@ void Terrain::run()
 	}
 
 	float *faces = createLookupTable();
-	for (int i = 0; i < 256 * 15; i++)
-	{
-		faces[i] = (faces[i] + 1) / 12.0f;
-	}
 
 	glGenTextures(1, &facesTexture->mId);
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
@@ -155,24 +151,40 @@ void Terrain::run()
 		{
 			for (int z = 0; z < densitySize; z++)
 			{
-				densityFunction3D[x][y][z] = y / densitySizeFloat;
+				densityFunction3D[x][y][z] = -(y - 16);
 			}
 		}
 	}
 
-	glGenTextures(1, &densityTexture3D->mId);
+	/*glGenTextures(1, &densityTexture3D->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
 	bonobo::checkForErrors();
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	bonobo::checkForErrors();
+	
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, densitySize, densitySize, densitySize, 0, GL_RED, GL_FLOAT, densityFunction3D);
+	glGenerateTextureMipmap(densityTexture3D->mId);
 	bonobo::checkForErrors();
-	densityTexture3D->mTarget = bonobo::TEXTURE_3D;
+	densityTexture3D->mTarget = bonobo::TEXTURE_3D;*/
+
+	densityTexture3D = bonobo::loadTexture3D(nullptr, densitySize, densitySize, densitySize, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
+	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
+	glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, densitySize, densitySize, densitySize, GL_RED, GL_FLOAT, densityFunction3D);
+	glBindTexture(GL_TEXTURE_3D, 0);
+
+	/*// Check texture values
+	float densityArrayTest[densitySize][densitySize][densitySize];
+	glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, densityArrayTest);
+	for (int i = 0; i < densitySize; i++)
+	{
+		printf("%f\n", densityArrayTest[0][i][0]);
+	}*/
+
 	glBindTexture(GL_TEXTURE_3D, 0);
 
 	/*glGenTextures(1, &facesTexture->mId);
@@ -402,6 +414,7 @@ void Terrain::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bonobo::checkForErrors();
+		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::bindTextureSampler(*terrainShader, "Density_texture", 0, *densityTexture3D, *sampler3D);
 		bonobo::bindTextureSampler(*terrainShader, "Faces_texture", 1, *facesTexture, *sampler3D);
@@ -426,6 +439,7 @@ void Terrain::run()
 		GLStateInspection::CaptureSnapshot("Terrain");
 		
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		
 		glDrawArrays(GL_POINTS, 0, nbr_voxelPoints);
 		bonobo::checkForErrors();
 
@@ -436,8 +450,8 @@ void Terrain::run()
 		bonobo::checkForErrors();
 		glBindSampler(0u, 0u);
 		bonobo::checkForErrors();
-
-		//glBindVertexArray(0u);
+		glBindTexture(GL_TEXTURE_3D, 0);
+		glBindVertexArray(0u);
 		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
 		bonobo::checkForErrors();
 

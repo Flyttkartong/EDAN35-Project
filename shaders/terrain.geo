@@ -18,7 +18,7 @@ uniform float OriginVertexZ;
 
 layout(points) in;
 
-layout(line_strip, max_vertices = 15) out;
+layout(triangle_strip, max_vertices = 15) out;
 
 void main()
 {
@@ -37,27 +37,7 @@ void main()
 	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
 	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
 	
-	// Create data structure for vertex index pairs
-	// struct vertexPair
-	// {
-		// int a;
-		// int b;
-	// };
-	// Represent edges as vertex index pairs
-	// vertexPair e[12];
-	// e[0] = vertexPair(0, 1);
-	// e[1] = vertexPair(1, 2);
-	// e[2] = vertexPair(2, 3);
-	// e[3] = vertexPair(3, 0);
-	// e[4] = vertexPair(4, 5);
-	// e[5] = vertexPair(5, 6);
-	// e[6] = vertexPair(6, 7);
-	// e[7] = vertexPair(7, 4);
-	// e[8] = vertexPair(0, 4);
-	// e[9] = vertexPair(1, 5);
-	// e[10]= vertexPair(3, 7);
-	// e[11]= vertexPair(2, 6); 
-	
+	// Create data structure for vertex index pairs	
 	int e[12][2];
 	e[0][0] = 0; 	e[0][1] = 1;
 	e[1][0] = 1; 	e[1][1] = 2;
@@ -73,28 +53,26 @@ void main()
 	e[11][0] = 2; 	e[11][1] = 6;
 	
 	
-	// Create sample points by offsetting by origin.
+	// Create texture sample points by offsetting by origin.
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
-		v[i] = (pos[i] - origin).xyz;
+		v[i] = pos[i].xyz / densitySizeFloat;//(pos[i] - origin).xyz;
 	}
 	
-	// Sample density value and create case number by converting from bit to int
+	// Sample density value in corners and create case number by converting from bit to int. ORDER IMPORTANT!
 	float densities[8];
 	int case_nbr = 0;
+	vec4 densityTestVec4;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = (texture(Density_texture, v[i]).w)*densitySizeFloat;
-		if(densities[i] < 0.9f) 
+		densities[i] = texture(Density_texture, v[i]).x;
+		if(densities[i] > 0) 
 		{
 			case_nbr += int(pow(2, i));
-			gl_Position = model_to_clip_matrix * pos[i];
-			EmitVertex();
 		}
 	}
-	EndPrimitive();
-	/*
+	
 	// Offset case number to get the correct index for Faces_texture
 	int case_index = case_nbr * 15;
 	
@@ -104,7 +82,7 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = int(12*(texture1D(Faces_texture, case_index + i).w) - 1);
+		edge_index = int(texture1D(Faces_texture, case_index + i).x);
 		if(edge_index != -1) 
 		{
 			edges[i][0] = e[edge_index][0];
@@ -137,5 +115,5 @@ void main()
 		{
 			EndPrimitive();
 		}
-	}*/
+	}
 }
