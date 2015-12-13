@@ -53,7 +53,7 @@ void main()
 	e[11][0] = 2; 	e[11][1] = 6;
 	
 	
-	// Create texture sample points by offsetting by origin.
+	// Create texture sample points
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
@@ -67,7 +67,7 @@ void main()
 	for(int i = 0; i < 8; i++)
 	{
 		densities[i] = texture(Density_texture, v[i]).x;
-		if(densities[i] > 0) 
+		if(densities[i] >= 0) 
 		{
 			case_nbr += int(pow(2, i));
 		}
