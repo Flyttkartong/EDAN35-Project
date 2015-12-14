@@ -39,6 +39,7 @@
 #define DENSITY_RES_X  33
 #define DENSITY_RES_Y  33
 #define DENSITY_RES_Z  33
+#define DENSITY_SIZE  33
 
 #define MSAA_RATE	             1
 #define LIGHT_INTENSITY     240000.0f
@@ -46,6 +47,8 @@
 #define LIGHT_CUTOFF             0.05f
 
 #define LIGHTS_NB 4
+
+float noise[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
 
 Terrain::Terrain(int argc, const char* argv[])
 {
@@ -132,7 +135,7 @@ void Terrain::run()
 		exit(-1);
 	}
 
-	const int edgesSize = 256 * 15;
+	const int EDGES_SIZE = 256 * 15;
 	int *edges = createLookupTable();
 	
 	glGenTextures(1, &edgeTexture->mId);
@@ -142,22 +145,24 @@ void Terrain::run()
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32I, edgesSize, 0, GL_RED_INTEGER, GL_INT, edges);
-	glGenerateTextureMipmap(edgeTexture->mId);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32I, EDGES_SIZE, 0, GL_RED_INTEGER, GL_INT, edges);
+	//glGenerateTextureMipmap(edgeTexture->mId);
 	bonobo::checkForErrors();
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
 	edgeTexture->mTarget = bonobo::TEXTURE_1D;
 
 	//facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_INT, v4i(32, 0, 0, 0));
 
-	bonobo::checkForErrors();
+	/*bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_1D, edgeTexture->mId);
 	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, edgesSize, GL_RED_INTEGER, GL_INT, edges);
-	bonobo::checkForErrors();
+	bonobo::checkForErrors();*/
 
 	// Check texture values
-	/*int facesArrayTest[facesSize];
+	/*int facesArrayTest[edgesSize];
 	glGetTexImage(GL_TEXTURE_1D, 0, GL_RED_INTEGER, GL_INT, facesArrayTest);
-	for (int i = 0; i < facesSize; i++)
+	for (int i = 0; i < edgesSize; i++)
 	{
 		printf("%d\n", facesArrayTest[i]);
 	}*/
@@ -174,7 +179,20 @@ void Terrain::run()
 	facesTexture->mTarget = bonobo::TEXTURE_1D;
 	glBindTexture(GL_TEXTURE_1D, 0);*/
 
-	const int DENSITY_SIZE = 33;
+	
+	// Create noise function
+	for (int x = 0; x < DENSITY_SIZE; x++)
+	{
+		for (int y = 0; y < DENSITY_SIZE; y++)
+		{
+			for (int z = 0; z < DENSITY_SIZE; z++)
+			{
+				noise[x][y][z] = (rand() % 32768) / 32768;
+			}
+		}
+	}
+	
+	// Create density function
 	float densityFunction3D[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
 	for (int x = 0; x < DENSITY_SIZE; x++)
 	{
@@ -182,7 +200,7 @@ void Terrain::run()
 		{
 			for (int z = 0; z < DENSITY_SIZE; z++)
 			{
-				densityFunction3D[x][y][z] = y + 1 / (rand() % 10 + 1) - 16.f;
+				densityFunction3D[x][y][z] = (y - 16.f);// + turbulence(x, y, z);
 			}
 		}
 	}
@@ -351,12 +369,12 @@ void Terrain::run()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 
-	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
+	glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
 	glEnable(GL_CULL_FACE);
 	//int i = 1;
 
 	//create testure sampler
-	bonobo::Sampler *sampler3D = bonobo::loadSampler();
+	bonobo::Sampler *sampler = bonobo::loadSampler();
 	//bonobo::Sampler *samplerFaces = bonobo::loadSampler();
 
 	//create texture layer buffer whibbly whobbly stuffy thingi...
@@ -432,7 +450,7 @@ void Terrain::run()
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
-		//glDepthFunc(GL_LESS);
+		glDepthFunc(GL_LESS);
 
 
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
@@ -443,13 +461,14 @@ void Terrain::run()
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearDepthf(1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
 		glBindTexture(GL_TEXTURE_1D, edgeTexture->mId);
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
-		bonobo::bindTextureSampler(*terrainShader, "density_texture", 0, *densityTexture3D, *sampler3D);
-		bonobo::bindTextureSampler(*terrainShader, "edge_texture", 1, *edgeTexture, *sampler3D);
+		bonobo::bindTextureSampler(*terrainShader, "density_texture", 0, *densityTexture3D, *sampler);
+		bonobo::bindTextureSampler(*terrainShader, "edge_texture", 1, *edgeTexture, *sampler);
 		//Probably better way of doing this, but tired!!
 		bonobo::setUniform(*terrainShader, "origin_x", originPoint[0]);
 		bonobo::setUniform(*terrainShader, "origin_y", originPoint[1]);
@@ -518,6 +537,51 @@ void Terrain::run()
 	vao = 0u;
 }
 
+float Terrain::turbulence(int x, int y, int z)
+{
+	float size = (float) DENSITY_SIZE;
+	double value = 0.0, initialSize = size;
+
+	while (size >= 1)
+	{
+		value += smoothNoise(x / size, y / size, z / size) * size;
+		size /= 2.0;
+	}
+
+	return (128.0 * value / initialSize);
+}
+
+float Terrain::smoothNoise(int x, int y, int z)
+{
+	//get fractional part of x and y
+	double fractX = x - int(x);
+	double fractY = y - int(y);
+	double fractZ = z - int(z);
+
+	//wrap around
+	int x1 = (int(x) + DENSITY_SIZE) % DENSITY_SIZE;
+	int y1 = (int(y) + DENSITY_SIZE) % DENSITY_SIZE;
+	int z1 = (int(z) + DENSITY_SIZE) % DENSITY_SIZE;
+
+	//neighbor values
+	int x2 = (x1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
+	int y2 = (y1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
+	int z2 = (z1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
+
+	//smooth the noise with bilinear interpolation
+	double value = 0.0;
+	value += fractX       * fractY       * fractZ       * noise[x1][y1][z1];
+	value += fractX       * (1 - fractY) * fractZ       * noise[x1][y2][z1];
+	value += (1 - fractX) * fractY       * fractZ       * noise[x2][y1][z1];
+	value += (1 - fractX) * (1 - fractY) * fractZ       * noise[x2][y2][z1];
+
+	value += fractX       * fractY       * (1 - fractZ) * noise[x1][y1][z2];
+	value += fractX       * (1 - fractY) * (1 - fractZ) * noise[x1][y2][z2];
+	value += (1 - fractX) * fractY       * (1 - fractZ) * noise[x2][y1][z2];
+	value += (1 - fractX) * (1 - fractY) * (1 - fractZ) * noise[x2][y2][z2];
+
+	return value;
+}
 
 int * Terrain::createLookupTable() 
 {

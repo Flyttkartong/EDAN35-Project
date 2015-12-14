@@ -91,13 +91,13 @@ void main()
 	}
 	
 	// Interpolate vertex positions
-	//vec4 out_points[nbr_edges];
+	vec4 out_points[15];
 	for(int i = 0; i < nbr_edges; i++)
 	{
-		//out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
+		out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
 		
-		gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
-		if((i + 1) % 3 == 1)
+		//gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
+		/*if((i + 1) % 3 == 1)
 		{
 			fColor = vec3(0.3,0.3,0.3);
 		}
@@ -114,8 +114,49 @@ void main()
 		if((i + 1) % 3 == 0) // Done with one triangle
 		{
 			EndPrimitive();
-		}
+		}*/
 	}
 	
-	
+	// Create normal for each triangle and output triangle strip
+	vec4 U, V;
+	vec3 normal;
+	int nbr_triangles = int(nbr_edges / 3);
+	for(int i = 0; i < nbr_triangles; i++) 
+	{
+		U = out_points[3*i+1] - out_points[3*i];
+		V = out_points[3*i+2] - out_points[3*i];
+		/*normal = vec3(	
+			U.y * V.z - U.z * V.y, 
+			U.z * V.x - U.x * V.z, 
+			U.x * V.y - U.y * V.x	
+		);*/
+		normal = normalize(cross(U.xyz, V.xyz));
+		fColor = normal;
+		
+		gl_Position = model_to_clip_matrix * out_points[3*i];
+		EmitVertex();
+		
+		gl_Position = model_to_clip_matrix * out_points[3*i+1];
+		EmitVertex();
+		
+		gl_Position = model_to_clip_matrix * out_points[3*i+2];
+		EmitVertex();
+		
+		EndPrimitive();
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
