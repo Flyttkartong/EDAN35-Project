@@ -1,7 +1,6 @@
 #version 430
 
 const float densitySizeFloat = 33.0f;
-const float facesSizeFloat = 256*15;
 
 uniform mat4 model_to_clip_matrix;
 
@@ -13,9 +12,9 @@ uniform float OriginVertexZ;
 
 layout(points) in;
 
-layout(points, max_vertices = 15) out;
+layout(triangle_strip, max_vertices = 15) out;
 
-out vec3 fColor;
+//out vec3 fColor;
 
 void main()
 {
@@ -70,7 +69,7 @@ void main()
 	}
 	
 	// Offset case number to get the correct index for Faces_texture
-	int case_index = 100*15;// case_nbr * 15;
+	int case_index = case_nbr * 15;
 	
 	// Fetch edge index from Faces_texture and get vertex pair from e
 	int edges[15][2];
@@ -78,10 +77,10 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = int(texelFetch(Faces_texture, case_index + i, 0).x) - 1;
+		edge_index = texelFetch(Faces_texture, case_index + i, 0).r;
 		if(edge_index != -1) 
 		{
-			if(edge_index <= 3)
+			/*if(edge_index <= 3)
 			{
 				fColor = vec3(1, 0, 0);
 			} 
@@ -100,21 +99,21 @@ void main()
 			else
 			{
 				fColor = vec3(0, 1, 1);
-			}
-			//edges[i][0] = e[edge_index][0];
-			//edges[i][1] = e[edge_index][1];
+			}*/
+			edges[i][0] = e[edge_index][0];
+			edges[i][1] = e[edge_index][1];
 		}
 		else
 		{
-			fColor = vec3(1, 1, 1);
+			//fColor = vec3(1, 1, 1);
 			nbr_edges = i; // We encountered -1, update nbr_edges
-			//break;
+			break;
 		}
-		gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
+		/*gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
 		EmitVertex();
-		EndPrimitive();
+		EndPrimitive();*/
 	}
-	/*
+	
 	// Interpolate vertex positions and output primitives
 	for(int i = 0; i < nbr_edges; i++)
 	{
@@ -131,9 +130,9 @@ void main()
 		gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
 		EmitVertex();
 		
-		if(i % 3 == 0) // Done with one triangle
+		if(i != 0 && i % 3 == 0) // Done with one triangle
 		{
 			EndPrimitive();
 		}
-	}*/
+	}
 }

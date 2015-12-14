@@ -133,25 +133,38 @@ void Terrain::run()
 	}
 
 	const int facesSize = 256 * 15;
-	float *faces = createLookupTable();
+	int *faces = createLookupTable();
 	for (int i = 0; i < facesSize; i++)
 	{
-		faces[i]++;
+		faces[i];
 	}
 	
-	facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
+	glGenTextures(1, &facesTexture->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
-	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, facesSize, GL_RED, GL_FLOAT, faces);
+	bonobo::checkForErrors();
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32I, facesSize, 0, GL_RED_INTEGER, GL_INT, faces);
+	glGenerateTextureMipmap(facesTexture->mId);
+	bonobo::checkForErrors();
+	facesTexture->mTarget = bonobo::TEXTURE_1D;
+
+	//facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_INT, v4i(32, 0, 0, 0));
+
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
+	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, facesSize, GL_RED_INTEGER, GL_INT, faces);
 	bonobo::checkForErrors();
 
 	// Check texture values
-	float facesArrayTest[facesSize];
-	glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, facesArrayTest);
+	/*int facesArrayTest[facesSize];
+	glGetTexImage(GL_TEXTURE_1D, 0, GL_RED_INTEGER, GL_INT, facesArrayTest);
 	for (int i = 0; i < facesSize; i++)
 	{
-		printf("%f\n", facesArrayTest[i] - 1);
-	}
+		printf("%d\n", facesArrayTest[i]);
+	}*/
 
 	glBindTexture(GL_TEXTURE_1D, 0);
 
@@ -174,7 +187,7 @@ void Terrain::run()
 		{
 			for (int z = 0; z < densitySize; z++)
 			{
-				densityFunction3D[x][y][z] = -(y - 16);
+				densityFunction3D[x][y][z] = -(y - 16.f);
 			}
 		}
 	}
@@ -344,7 +357,7 @@ void Terrain::run()
 	bonobo::checkForErrors();
 
 	// glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	//int i = 1;
 
 	//create testure sampler
@@ -511,9 +524,9 @@ void Terrain::run()
 }
 
 
-float * Terrain::createLookupTable() 
+int * Terrain::createLookupTable() 
 {
-	static float faces[256 * 15] =
+	static int faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
