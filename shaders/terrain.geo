@@ -99,15 +99,15 @@ void main()
 		gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
 		if((i + 1) % 3 == 1)
 		{
-			fColor = vec3(1,0,0);
+			fColor = vec3(0.3,0.3,0.3);
 		}
 		else if ((i + 1) % 3 == 2)
 		{
-			fColor = vec3(1,1,0);
+			fColor = vec3(0.6,0.6,0.6);
 		}
 		else
 		{
-			fColor = vec3(0,1,1);
+			fColor = vec3(1,1,1);
 		}
 		EmitVertex();
 		
