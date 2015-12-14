@@ -11,7 +11,7 @@ public:
 	Terrain(int argc, const char* argv[]);
 	~Terrain();
 	void run();
-	int * createLookupTable();
+	float * createLookupTable();
 private:
 	InputHandler *inputHandler;
 	Window       *window;

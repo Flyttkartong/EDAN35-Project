@@ -1,6 +1,7 @@
 #version 430
 
 const float densitySizeFloat = 33.0f;
+const float facesSizeFloat = 256*15;
 
 uniform mat4 model_to_clip_matrix;
 
@@ -12,7 +13,7 @@ uniform float OriginVertexZ;
 
 layout(points) in;
 
-layout(line_strip, max_vertices = 15) out;
+layout(points, max_vertices = 15) out;
 
 out vec3 fColor;
 
@@ -61,7 +62,7 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = texture(Density_texture, v[i]).x;
+		densities[i] = texture(Density_texture, v[i]).r;
 		if(densities[i] >= 0) 
 		{
 			case_nbr += int(pow(2, i));
@@ -69,7 +70,7 @@ void main()
 	}
 	
 	// Offset case number to get the correct index for Faces_texture
-	int case_index = 0;// case_nbr * 15;
+	int case_index = 100*15;// case_nbr * 15;
 	
 	// Fetch edge index from Faces_texture and get vertex pair from e
 	int edges[15][2];
@@ -77,22 +78,42 @@ void main()
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = texelFetch(Faces_texture, case_index + i, 0).x;
+		edge_index = int(texelFetch(Faces_texture, case_index + i, 0).x) - 1;
 		if(edge_index != -1) 
 		{
-			gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
-			fColor = vec3(edge_index/11.f, 0, 0);
-			EmitVertex();
+			if(edge_index <= 3)
+			{
+				fColor = vec3(1, 0, 0);
+			} 
+			else if (edge_index > 3 && edge_index <= 6)
+			{
+				fColor = vec3(0, 1, 0);
+			} 
+			else if (edge_index > 3 && edge_index <= 6)
+			{
+				fColor = vec3(0, 0, 1);
+			}			
+			else if (edge_index > 6 && edge_index <= 9)
+			{
+				fColor = vec3(1, 1, 0);
+			}
+			else
+			{
+				fColor = vec3(0, 1, 1);
+			}
 			//edges[i][0] = e[edge_index][0];
 			//edges[i][1] = e[edge_index][1];
 		}
 		else
 		{
+			fColor = vec3(1, 1, 1);
 			nbr_edges = i; // We encountered -1, update nbr_edges
-			break;
+			//break;
 		}
+		gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
+		EmitVertex();
+		EndPrimitive();
 	}
-	EndPrimitive();
 	/*
 	// Interpolate vertex positions and output primitives
 	for(int i = 0; i < nbr_edges; i++)

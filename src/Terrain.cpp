@@ -132,15 +132,30 @@ void Terrain::run()
 		exit(-1);
 	}
 
-	int *faces = createLookupTable();
-
 	const int facesSize = 256 * 15;
-	facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_UNORM, v4i(8, 0, 0, 0));
+	float *faces = createLookupTable();
+	for (int i = 0; i < facesSize; i++)
+	{
+		faces[i]++;
+	}
+	
+	facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
-	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, facesSize, GL_RED, GL_INT, facesTexture);
+	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, facesSize, GL_RED, GL_FLOAT, faces);
 	bonobo::checkForErrors();
+
+	// Check texture values
+	float facesArrayTest[facesSize];
+	glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, facesArrayTest);
+	for (int i = 0; i < facesSize; i++)
+	{
+		printf("%f\n", facesArrayTest[i] - 1);
+	}
+
 	glBindTexture(GL_TEXTURE_1D, 0);
+
+
 
 	/*glGenTextures(1, &facesTexture->mId);
 	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
@@ -193,7 +208,7 @@ void Terrain::run()
 		printf("%f\n", densityArrayTest[0][i][0]);
 	}*/
 
-	glBindTexture(GL_TEXTURE_3D, 0);
+	//glBindTexture(GL_TEXTURE_3D, 0);
 
 	/*glGenTextures(1, &facesTexture->mId);
 	bonobo::checkForErrors();
@@ -496,9 +511,9 @@ void Terrain::run()
 }
 
 
-int * Terrain::createLookupTable() 
+float * Terrain::createLookupTable() 
 {
-	static int faces[256 * 15] =
+	static float faces[256 * 15] =
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
