@@ -200,7 +200,7 @@ void Terrain::run()
 		{
 			for (int z = 0; z < DENSITY_SIZE; z++)
 			{
-				densityFunction3D[x][y][z] = (y - 16.f);// + turbulence(x, y, z);
+				densityFunction3D[x][y][z] = y - 16.f+ cos(x/10.0f+rand());// +turbulence(x, y, z);
 			}
 		}
 	}
@@ -460,7 +460,7 @@ void Terrain::run()
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.2f, 0.2f, 0.9f, 1.0f);
 		glClearDepthf(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bonobo::checkForErrors();
