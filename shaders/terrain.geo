@@ -1,37 +1,38 @@
 #version 430
 
-const float densitySizeFloat = 33.0f;
+const float DENSITY_SIZE_FLOAT = 33.0f;
 
 uniform mat4 model_to_clip_matrix;
 
-uniform sampler3D Density_texture;
-uniform isampler1D Faces_texture;
-uniform float OriginVertexX;
-uniform float OriginVertexY;
-uniform float OriginVertexZ;
+uniform sampler3D density_texture;
+uniform isampler1D edge_texture;
+
+uniform float origin_x;
+uniform float origin_y;
+uniform float origin_z;
 
 layout(points) in;
 
 layout(triangle_strip, max_vertices = 15) out;
 
-//out vec3 fColor;
+out vec3 fColor;
 
 void main()
 {
-	vec4 origin = vec4(OriginVertexX, OriginVertexY, OriginVertexZ, 0.0f);
+	vec4 origin = vec4(origin_x, origin_y, origin_z, 0.0f);
 	vec4 vertex = gl_in[0].gl_Position;
 	float offset = 1.0f;
 
 	// Offset vertex coordinate to get cube corners ORDER IMPORTANT!
 	vec4 pos[8];
 	pos[0] = vertex;
-	pos[1] = vertex + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
-	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
 	pos[3] = vertex + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
+	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
+	pos[1] = vertex + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
 	pos[4] = vertex + vec4(	0.0f, 	0.0f, 	offset, 0.0f);
-	pos[5] = vertex + vec4(	offset, 0.0f, 	offset, 0.0f);
-	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
 	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
+	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
+	pos[5] = vertex + vec4(	offset, 0.0f, 	offset, 0.0f);
 	
 	// Create data structure for vertex index pairs	
 	int e[12][2];
@@ -45,15 +46,14 @@ void main()
 	e[7][0] = 7; 	e[7][1] = 4;
 	e[8][0] = 0; 	e[8][1] = 4;
 	e[9][0] = 1; 	e[9][1] = 5;
-	e[10][0] = 3; 	e[10][1] = 7;
-	e[11][0] = 2; 	e[11][1] = 6;
-	
+	e[10][0] = 2; 	e[10][1] = 6;
+	e[11][0] = 3; 	e[11][1] = 7;
 	
 	// Create texture sample points
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
-		v[i] = pos[i].xyz / densitySizeFloat;//(pos[i] - origin).xyz;
+		v[i] = pos[i].xyz / DENSITY_SIZE_FLOAT;//(pos[i] - origin).xyz;
 	}
 	
 	// Sample density value in corners and create case number by converting from bit to int. ORDER IMPORTANT!
@@ -61,78 +61,61 @@ void main()
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
 	{
-		densities[i] = texture(Density_texture, v[i]).r;
+		densities[i] = texture(density_texture, v[i]).r;
 		if(densities[i] >= 0) 
 		{
 			case_nbr += int(pow(2, i));
 		}
 	}
 	
-	// Offset case number to get the correct index for Faces_texture
+	// Offset case number to get the correct index for edge_texture
 	int case_index = case_nbr * 15;
 	
-	// Fetch edge index from Faces_texture and get vertex pair from e
+	// Fetch edge index from edge_texture and get vertex pair from e[]
 	int edges[15][2];
 	int edge_index;
 	int nbr_edges = 15;
 	for(int i = 0; i < 15; i++) 
 	{
-		edge_index = texelFetch(Faces_texture, case_index + i, 0).r;
+		edge_index = texelFetch(edge_texture, case_index + i, 0).r;
 		if(edge_index != -1) 
 		{
-			/*if(edge_index <= 3)
-			{
-				fColor = vec3(1, 0, 0);
-			} 
-			else if (edge_index > 3 && edge_index <= 6)
-			{
-				fColor = vec3(0, 1, 0);
-			} 
-			else if (edge_index > 3 && edge_index <= 6)
-			{
-				fColor = vec3(0, 0, 1);
-			}			
-			else if (edge_index > 6 && edge_index <= 9)
-			{
-				fColor = vec3(1, 1, 0);
-			}
-			else
-			{
-				fColor = vec3(0, 1, 1);
-			}*/
 			edges[i][0] = e[edge_index][0];
 			edges[i][1] = e[edge_index][1];
 		}
 		else
 		{
-			//fColor = vec3(1, 1, 1);
 			nbr_edges = i; // We encountered -1, update nbr_edges
 			break;
 		}
-		/*gl_Position = model_to_clip_matrix * vertex + vec4((0.01f * i),0,0,0);
-		EmitVertex();
-		EndPrimitive();*/
 	}
 	
-	// Interpolate vertex positions and output primitives
+	// Interpolate vertex positions
+	//vec4 out_points[nbr_edges];
 	for(int i = 0; i < nbr_edges; i++)
 	{
-		// vec4 a = pos[edges[i].a];
-		// vec4 b = pos[edges[i].b];
-		// float a_density = densities[edges[i].a];
-		// float b_density = densities[edges[i].b];
-		// float b_weight = abs(b_density)/abs(a_density - b_density);
-		// float a_weight = abs(a_density)/abs(a_density - b_density);
-		// gl_Position = a * a_wight + b * b_weight;
-		
-		// gl_Position = pos[edges[i].a] * abs(densities[edges[i].a])/abs(densities[edges[i].a] - densities[edges[i].b]) + pos[edges[i].b] * abs(densities[edges[i].b])/abs(densities[edges[i].a] - densities[edges[i].b]);
+		//out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
 		
 		gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
+		if((i + 1) % 3 == 1)
+		{
+			fColor = vec3(1,0,0);
+		}
+		else if ((i + 1) % 3 == 2)
+		{
+			fColor = vec3(1,1,0);
+		}
+		else
+		{
+			fColor = vec3(0,1,1);
+		}
 		EmitVertex();
 		
-		if(i != 0 && i % 3 == 0) // Done with one triangle
+		if((i + 1) % 3 == 0) // Done with one triangle
 		{
 			EndPrimitive();
 		}
 	}
+	
+	
 }
