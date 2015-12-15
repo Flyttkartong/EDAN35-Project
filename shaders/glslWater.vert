@@ -1,5 +1,5 @@
 
-#version 150
+#version 330
 
 /* Per-vertex input from application */
 in vec3 vPosition;
@@ -29,9 +29,9 @@ void main()
 {
 	vec4 P = vec4(vPosition, 1.0);
 	
-	/* TODO: Add waves to P */
+	// /* TODO: Add waves to P */
 
-	/*Parameters*/
+	// /*Parameters*/
 	vec2 amp = vec2(1.0,0.5);
 	vec2 freq = vec2(0.2,0.4);
 	vec2 phase = vec2(0.5,1.3);
@@ -39,7 +39,7 @@ void main()
 	vec2 dir1 = vec2(-1.0,0.0);
 	vec2 dir2 = vec2(-0.7,0.7);
 
-	/*Generate sine functions*/
+	// /*Generate sine functions*/
 
 	float Gfunc1 = pow(amp.x * ( sin( (dir1.x*vPosition.x + dir1.y*vPosition.z) * freq.x + time) * 0.5 + 0.5),sharp.x);
 	float Gfunc2 = pow(amp.x * ( sin( (dir2.x*vPosition.x + dir2.y*vPosition.z) * freq.y + time) * 0.5 + 0.5),sharp.y);
