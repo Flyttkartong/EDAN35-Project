@@ -144,14 +144,19 @@ void Terrain::run()
 		{
 			for (int z = 0; z < DENSITY_SIZE; z++)
 			{
-				densityFunction3D[x][y][z] = y - 13.f + 0.6f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 1 / (rand() % 4 + 1);
-				if (x > (18+rand()%4) && x < 22 && z>18 && z<22) 
+				densityFunction3D[x][y][z] = y - 7.f + 0.6f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 1 / (rand() % 4 + 1);
+				if ( fabs(16.0f+rand()%10-x)*fabs(16.0f + rand() % 10 - x) +fabs(15.0f+rand()% 7-z)*fabs(15.0f + rand() % 7 - z) <  30.f-0.9*std::max(30.f- (float) y,0.0f))
 				{
-					densityFunction3D[x][y][z] -= (10  + rand() % 4);
+					densityFunction3D[x][y][z] = -1;//-=// (10  + rand() % 4);
 				}
-				else if (x < 1 || x > DENSITY_SIZE - 2 || z < 1 || z > DENSITY_SIZE - 2)
+				if (fabs(16.0f - z)*fabs(16.0f - z) + fabs(17.0f  - y)*fabs(17.0f   - y) <  (5*5  ))
 				{
-					densityFunction3D[x][y][z] += (10 + rand() % 5);
+					densityFunction3D[x][y][z] = 1;
+				}
+
+				else if (fabs(15.0f - z)*fabs(15.0f - z) + fabs(15.0f - x)*fabs(15.0f - x) >  (15.0f+rand()%2)*(15.0f + rand() % 2))
+				{
+					densityFunction3D[x][y][z] = 1;// += (10 + rand() % 5);
 				}
 			}
 		}
