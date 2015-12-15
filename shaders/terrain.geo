@@ -16,6 +16,8 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 15) out;
 
 out vec3 fColor;
+out vec3 normal;
+out vec2 texCoord;
 
 void main()
 {
@@ -95,31 +97,11 @@ void main()
 	for(int i = 0; i < nbr_edges; i++)
 	{
 		out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
-		
-		//gl_Position = model_to_clip_matrix * (pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]));
-		/*if((i + 1) % 3 == 1)
-		{
-			fColor = vec3(0.3,0.3,0.3);
-		}
-		else if ((i + 1) % 3 == 2)
-		{
-			fColor = vec3(0.6,0.6,0.6);
-		}
-		else
-		{
-			fColor = vec3(1,1,1);
-		}
-		EmitVertex();
-		
-		if((i + 1) % 3 == 0) // Done with one triangle
-		{
-			EndPrimitive();
-		}*/
 	}
 	
 	// Create normal for each triangle and output triangle strip
 	vec4 U, V;
-	vec3 normal;
+	normal;
 	int nbr_triangles = int(nbr_edges / 3);
 	for(int i = 0; i < nbr_triangles; i++) 
 	{
@@ -131,14 +113,32 @@ void main()
 			U.x * V.y - U.y * V.x	
 		);*/
 		normal = normalize(cross(U.xyz, V.xyz));
-		fColor = normal;
+		texCoord=vec2(out_points[3*i].x/33.f,out_points[3*i].z/33.f);
+		//texCoord= vec2(i/nbr_triangles,1);
+	
+		vec3 up=vec3(0.0f,1.0f,0.0f);
+		if(dot(up,fColor)>0.8f)
+		{
+			fColor=vec3(0.0f,normal.y,0.0f);
+		} else {
+			float multiplier=(normal.x+normal.y+normal.z/3)*0.7;
+			fColor = vec3(multiplier,multiplier,multiplier);
+			
+		}
 		
+
+		fColor=normal;
 		gl_Position = model_to_clip_matrix * out_points[3*i];
 		EmitVertex();
 		
+		fColor -= vec3(0.01,0.01,0.01);
+		texCoord = vec2(out_points[3*i+1].x/33.f,out_points[3*i+1].z/33.f);
 		gl_Position = model_to_clip_matrix * out_points[3*i+1];
 		EmitVertex();
 		
+		
+		fColor += vec3(0.01,0.01,0.01);
+		texCoord = vec2(out_points[3*i+2].x/33.f,out_points[3*i+2].z/33.f);
 		gl_Position = model_to_clip_matrix * out_points[3*i+2];
 		EmitVertex();
 		

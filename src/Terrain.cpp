@@ -109,6 +109,7 @@ void Terrain::run()
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
 	bonobo::Texture *edgeTexture = new bonobo::Texture();
 	bonobo::Texture *densityTexture3D = new bonobo::Texture();
+	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 
 	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
 	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
@@ -135,6 +136,13 @@ void Terrain::run()
 		exit(-1);
 	}
 
+
+	
+
+
+
+
+
 	const int EDGES_SIZE = 256 * 15;
 	int *edges = createLookupTable();
 	
@@ -144,31 +152,14 @@ void Terrain::run()
 	bonobo::checkForErrors();
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32I, EDGES_SIZE, 0, GL_RED_INTEGER, GL_INT, edges);
-	//glGenerateTextureMipmap(edgeTexture->mId);
 	bonobo::checkForErrors();
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
 	edgeTexture->mTarget = bonobo::TEXTURE_1D;
-
-	//facesTexture = bonobo::loadTexture1D(facesSize, bonobo::TEXTURE_INT, v4i(32, 0, 0, 0));
-
-	/*bonobo::checkForErrors();
-	glBindTexture(GL_TEXTURE_1D, edgeTexture->mId);
-	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, edgesSize, GL_RED_INTEGER, GL_INT, edges);
-	bonobo::checkForErrors();*/
-
-	// Check texture values
-	/*int facesArrayTest[edgesSize];
-	glGetTexImage(GL_TEXTURE_1D, 0, GL_RED_INTEGER, GL_INT, facesArrayTest);
-	for (int i = 0; i < edgesSize; i++)
-	{
-		printf("%d\n", facesArrayTest[i]);
-	}*/
-
 	glBindTexture(GL_TEXTURE_1D, 0);
 
+	//Create cloud texture
 
 
 	/*glGenTextures(1, &facesTexture->mId);
@@ -200,7 +191,11 @@ void Terrain::run()
 		{
 			for (int z = 0; z < DENSITY_SIZE; z++)
 			{
-				densityFunction3D[x][y][z] = y - 16.f+ cos(x/10.0f+rand());// +turbulence(x, y, z);
+				densityFunction3D[x][y][z] = y - 13.f +1.2f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 4.0f*turbulence(x, y, z) + 1 / (rand() % 4 + 1);
+				if (x > (18+rand()%4) && x < 22 && z>18 && z<22) 
+				{
+					densityFunction3D[x][y][z] -= (4  + rand() % 5);
+				}
 			}
 		}
 	}
@@ -460,7 +455,7 @@ void Terrain::run()
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.2f, 0.2f, 0.9f, 1.0f);
+		glClearColor(0.4f, 0.4f, 1.0f, 1.0f);
 		glClearDepthf(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bonobo::checkForErrors();
@@ -469,10 +464,13 @@ void Terrain::run()
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::bindTextureSampler(*terrainShader, "density_texture", 0, *densityTexture3D, *sampler);
 		bonobo::bindTextureSampler(*terrainShader, "edge_texture", 1, *edgeTexture, *sampler);
+		bonobo::bindTextureSampler(*terrainShader, "clouds", 2, *cloudTexture, *sampler);
 		//Probably better way of doing this, but tired!!
 		bonobo::setUniform(*terrainShader, "origin_x", originPoint[0]);
 		bonobo::setUniform(*terrainShader, "origin_y", originPoint[1]);
 		bonobo::setUniform(*terrainShader, "origin_z", originPoint[2]);
+		bonobo::setUniform(*terrainShader, "ResY", (float) RES_Y);
+		bonobo::setUniform(*terrainShader, "ResX", (float) RES_X);
 
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
@@ -497,6 +495,8 @@ void Terrain::run()
 		glDisableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		glBindSampler(2u, 0u);
+		bonobo::checkForErrors();
 		glBindSampler(1u, 0u);
 		bonobo::checkForErrors();
 		glBindSampler(0u, 0u);
@@ -554,9 +554,9 @@ float Terrain::turbulence(int x, int y, int z)
 float Terrain::smoothNoise(int x, int y, int z)
 {
 	//get fractional part of x and y
-	double fractX = x - int(x);
-	double fractY = y - int(y);
-	double fractZ = z - int(z);
+	double fractX = rand();
+	double fractY = rand();
+	double fractZ = rand();
 
 	//wrap around
 	int x1 = (int(x) + DENSITY_SIZE) % DENSITY_SIZE;
