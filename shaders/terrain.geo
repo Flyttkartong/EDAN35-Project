@@ -100,48 +100,42 @@ void main()
 	}
 	
 	// Create normal for each triangle and output triangle strip
-	vec4 U, V;
-	normal;
+	vec3 U, V;
+	int point_index;
 	int nbr_triangles = int(nbr_edges / 3);
 	for(int i = 0; i < nbr_triangles; i++) 
 	{
-		U = out_points[3*i+1] - out_points[3*i];
-		V = out_points[3*i+2] - out_points[3*i];
-		/*normal = vec3(	
-			U.y * V.z - U.z * V.y, 
-			U.z * V.x - U.x * V.z, 
-			U.x * V.y - U.y * V.x	
-		);*/
-		normal = normalize(cross(U.xyz, V.xyz));
-		texCoord=vec2(out_points[3*i].x/33.f,out_points[3*i].z/33.f);
-		//texCoord= vec2(i/nbr_triangles,1);
-	
-		vec3 up=vec3(0.0f,1.0f,0.0f);
-		if(dot(up,fColor)>0.8f)
-		{
-			fColor=vec3(0.0f,normal.y,0.0f);
-		} else {
-			float multiplier=(normal.x+normal.y+normal.z/3)*0.7;
-			fColor = vec3(multiplier,multiplier,multiplier);
-			
-		}
+		point_index = 3 * i;
 		
-
-		fColor=normal;
-		gl_Position = model_to_clip_matrix * out_points[3*i];
+		U = out_points[point_index + 1].xyz - out_points[point_index].xyz;
+		V = out_points[point_index + 2].xyz - out_points[point_index].xyz;
+		normal = normalize(cross(U, V));
+		
+		// Vertex 1
+		texCoord = vec2(
+			out_points[point_index].x / DENSITY_SIZE_FLOAT,
+			out_points[point_index].z / DENSITY_SIZE_FLOAT
+		);
+		gl_Position = model_to_clip_matrix * out_points[point_index];
 		EmitVertex();
 		
-		fColor -= vec3(0.01,0.01,0.01);
-		texCoord = vec2(out_points[3*i+1].x/33.f,out_points[3*i+1].z/33.f);
+		// Vertex 2
+		texCoord = vec2(
+			out_points[point_index + 1].x / DENSITY_SIZE_FLOAT,
+			out_points[point_index + 1].z / DENSITY_SIZE_FLOAT
+		);
 		gl_Position = model_to_clip_matrix * out_points[3*i+1];
 		EmitVertex();
 		
-		
-		fColor += vec3(0.01,0.01,0.01);
-		texCoord = vec2(out_points[3*i+2].x/33.f,out_points[3*i+2].z/33.f);
+		// Vertex 3
+		texCoord = vec2(
+			out_points[point_index + 2].x / DENSITY_SIZE_FLOAT,
+			out_points[point_index + 2].z/DENSITY_SIZE_FLOAT
+		);
 		gl_Position = model_to_clip_matrix * out_points[3*i+2];
 		EmitVertex();
 		
+		// Done with triangle
 		EndPrimitive();
 	}
 }

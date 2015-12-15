@@ -90,8 +90,6 @@ void Terrain::run()
 	//
 	// Setup the camera. 
 	//
-	// NOTE: If the points don't show up at first, just press the left mouse button and they should appear. The camera orientation shouldn't need to be changed
-	// 
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 4.0f);
 	mCamera.mWorld.SetTranslate(v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
 	mCamera.mRotation.x = 0;// / 2.0f;
@@ -99,49 +97,28 @@ void Terrain::run()
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
 
-
-	//-------------------------Bonobo version----------------------------------
-
-	//Generate FBO and storing texture
-	//bonobo::Texture *rtTestMap = bonobo::loadTexture2D(RES_X, RES_Y, bonobo::TEXTURE_UNORM, v4i(8, 8, 8, 8), MSAA_RATE);
-	//glEnable(GL_TEXTURE_3D);
-
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
 	bonobo::Texture *edgeTexture = new bonobo::Texture();
 	bonobo::Texture *densityTexture3D = new bonobo::Texture();
 	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 
-	//const bonobo::Texture *gTest[1] = { rtTestTexture3D };
-	//bonobo::FBO *texture3DFbo = bonobo::loadFrameBufferObject(gTest, 1);
-
 	//
 	// Load all the shader programs used
+	//
 	std::string densityShaderNames[2] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.frag") };
-	//std::string testingShaderNames[3] = { SHADERS_PATH("testing.vert"),	SHADERS_PATH("testing.geo"), SHADERS_PATH("testing.frag") };
 	std::string terrainShaderNames[3] = { SHADERS_PATH("terrain.vert"),	SHADERS_PATH("terrain.geo"), SHADERS_PATH("terrain.frag") };
+
 	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 2);
-	//bonobo::ShaderProgram *testingShader = bonobo::loadShaderProgram(testingShaderNames, 3);
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
 
 	if (densityShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
-	/*if (testingShader == nullptr) {
-		LogError("Failed to load testing shader\n");
-		exit(-1);
-	}*/
 	if (terrainShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
-
-
-	
-
-
-
-
 
 	const int EDGES_SIZE = 256 * 15;
 	int *edges = createLookupTable();
@@ -158,30 +135,6 @@ void Terrain::run()
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
 	edgeTexture->mTarget = bonobo::TEXTURE_1D;
 	glBindTexture(GL_TEXTURE_1D, 0);
-
-	//Create cloud texture
-
-
-	/*glGenTextures(1, &facesTexture->mId);
-	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
-
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_FLOAT, faces);
-
-	facesTexture->mTarget = bonobo::TEXTURE_1D;
-	glBindTexture(GL_TEXTURE_1D, 0);*/
-
-	
-	// Create noise function
-	for (int x = 0; x < DENSITY_SIZE; x++)
-	{
-		for (int y = 0; y < DENSITY_SIZE; y++)
-		{
-			for (int z = 0; z < DENSITY_SIZE; z++)
-			{
-				noise[x][y][z] = (rand() % 32768) / 32768;
-			}
-		}
-	}
 	
 	// Create density function
 	float densityFunction3D[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
@@ -191,30 +144,18 @@ void Terrain::run()
 		{
 			for (int z = 0; z < DENSITY_SIZE; z++)
 			{
-				densityFunction3D[x][y][z] = y - 13.f +1.2f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 4.0f*turbulence(x, y, z) + 1 / (rand() % 4 + 1);
+				densityFunction3D[x][y][z] = y - 13.f + 0.6f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 1 / (rand() % 4 + 1);
 				if (x > (18+rand()%4) && x < 22 && z>18 && z<22) 
 				{
-					densityFunction3D[x][y][z] -= (4  + rand() % 5);
+					densityFunction3D[x][y][z] -= (10  + rand() % 4);
+				}
+				else if (x < 1 || x > DENSITY_SIZE - 2 || z < 1 || z > DENSITY_SIZE - 2)
+				{
+					densityFunction3D[x][y][z] += (10 + rand() % 5);
 				}
 			}
 		}
 	}
-
-	/*glGenTextures(1, &densityTexture3D->mId);
-	bonobo::checkForErrors();
-	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
-	bonobo::checkForErrors();
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-	bonobo::checkForErrors();
-	
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, densitySize, densitySize, densitySize, 0, GL_RED, GL_FLOAT, densityFunction3D);
-	glGenerateTextureMipmap(densityTexture3D->mId);
-	bonobo::checkForErrors();
-	densityTexture3D->mTarget = bonobo::TEXTURE_3D;*/
 
 	densityTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
 	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
@@ -229,35 +170,6 @@ void Terrain::run()
 		printf("%f\n", densityArrayTest[0][i][0]);
 	}*/
 
-	//glBindTexture(GL_TEXTURE_3D, 0);
-
-	/*glGenTextures(1, &facesTexture->mId);
-	bonobo::checkForErrors();
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
-	bonobo::checkForErrors();
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
-	bonobo::checkForErrors();
-	glBindTexture(GL_TEXTURE_1D, facesTexture->mId);
-	bonobo::checkForErrors();
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, 256 * 15, 0, GL_RED, GL_UNSIGNED_INT, faces);
-	bonobo::checkForErrors();
-	glBindTexture(GL_TEXTURE_1D, 0);*/
-
-	/*int *faces = createLookupTable();
-	const int FACES_SIZE = 256 * 15;
-
-	GLuint facesUBO;
-	glGenBuffers(1, &facesUBO);
-	glBindBuffer(GL_UNIFORM_BUFFER, facesUBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * FACES_SIZE, NULL, GL_DYNAMIC_DRAW);
-
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * FACES_SIZE, faces);
-
-	GLuint arrayBlockIdx = glGetUniformBlockIndex(terrainShader->mId, "arrayBlock");
-	glUniformBlockBinding(terrainShader->mId, arrayBlockIdx, 0);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, facesUBO);*/
-
-	// Generate and bind Vertex Buffer Object
 	GLuint vbo = 0u;
 	
 	glGenBuffers(1, &vbo);
@@ -338,24 +250,11 @@ void Terrain::run()
 	glVertexAttribPointer(densityVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 	bonobo::checkForErrors();
 
-	/*GLint testingVertexAttrib = glGetAttribLocation(testingShader->mId, "Vertex");
-	glEnableVertexAttribArray(testingVertexAttrib);
-	bonobo::checkForErrors();
-	glVertexAttribPointer(testingVertexAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-	bonobo::checkForErrors();*/
-
 	GLint terrainVertexAttrib = glGetAttribLocation(terrainShader->mId, "Vertex");
 	glEnableVertexAttribArray(terrainVertexAttrib);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(terrainVertexAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	bonobo::checkForErrors();
-
-	// Color Attribute
-	//GLint colorAttrib = glGetAttribLocation(testingShader->mId, "Color");
-	//glEnableVertexAttribArray(colorAttrib);
-	//bonobo::checkForErrors();
-	//glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	//bonobo::checkForErrors();
 
 	glBindVertexArray(0u);
 	bonobo::checkForErrors();
@@ -364,65 +263,11 @@ void Terrain::run()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 
-	glEnable(GL_DEPTH_TEST); // If this is enabled, the points don't show up
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	//int i = 1;
 
 	//create testure sampler
 	bonobo::Sampler *sampler = bonobo::loadSampler();
-	//bonobo::Sampler *samplerFaces = bonobo::loadSampler();
-
-	//create texture layer buffer whibbly whobbly stuffy thingi...
-	//for-loop for filling 3d texture
-	//for (int i = 0; i < 33; i++) {
-	//	//Create layer fbo
-	//	GLuint fbo;
-	//	glGenFramebuffers(1, &fbo);
-	//	bonobo::checkForErrors();
-	//	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	//	bonobo::checkForErrors();
-	//	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtTestTexture3D->mId, 0, i);
-
-	//	//bind said fbo
-	//	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	//	bonobo::checkForErrors();
-
-	//	//draw buffer
-	//	glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0);
-	//	bonobo::checkForErrors();
-
-	//	//test fbo
-	//	int result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	//	if (result != GL_FRAMEBUFFER_COMPLETE)
-	//		LogWarning("Failed to bind FBO/RBO");
-	//	bonobo::checkForErrors();
-
-
-
-	//	//Pass 1: Generate Density Function
-	//	//bonobo::setRenderTarget(fbo, 0);
-	//	glUseProgram(densityShader->mId);
-	//	glViewport(0, 0, DENSITY_RES_X, DENSITY_RES_Y);
-	//	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//	glClear(GL_COLOR_BUFFER_BIT);
-	//	bonobo::checkForErrors();
-	//	bonobo::setUniform(*densityShader, "model_to_clip_matrix", mat4f::Identity()/*cast<f32>(mCamera.GetWorldToClipMatrix())*/);
-
-	//	glBindVertexArray(vao);
-	//	bonobo::checkForErrors();
-
-	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	//	bonobo::checkForErrors();
-
-	//	//GLStateInspection::CaptureSnapshot("Terrain");
-
-	//	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	//	bonobo::checkForErrors();
-	//	glBindVertexArray(0u);
-	//	//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
-	//	bonobo::checkForErrors();
-	//}
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
@@ -447,11 +292,14 @@ void Terrain::run()
 
 		glDepthFunc(GL_LESS);
 
-
 		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
 
 
-		//Pass 2: Stuff
+
+
+		//
+		//Pass 2: Generate terrain
+		//
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
@@ -504,20 +352,75 @@ void Terrain::run()
 		glBindTexture(GL_TEXTURE_3D, 0);
 		glBindTexture(GL_TEXTURE_1D, 0);
 		glBindVertexArray(0u);
-		//bonobo::drawFullscreen(*testingShader); // This is not needed! glDrawArrays and ImGUI::Render do the trick :)
+		bonobo::checkForErrors();
+
+		GLStateInspection::CaptureSnapshot("Terrain");
 		bonobo::checkForErrors();
 
 
 
-		//GLStateInspection::CaptureSnapshot("Terrain");
-		//bonobo::checkForErrors();
+		//
+		//Pass 3: Generate water
+		//
+		/*bonobo::setRenderTarget(0, 0);
+		glUseProgram(terrainShader->mId);
+		glViewport(0, 0, RES_X, RES_Y);
+		glClearColor(0.4f, 0.4f, 1.0f, 1.0f);
+		glClearDepthf(1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		bonobo::checkForErrors();
+		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
+		glBindTexture(GL_TEXTURE_1D, edgeTexture->mId);
+		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+		bonobo::bindTextureSampler(*terrainShader, "density_texture", 0, *densityTexture3D, *sampler);
+		bonobo::bindTextureSampler(*terrainShader, "edge_texture", 1, *edgeTexture, *sampler);
+		bonobo::bindTextureSampler(*terrainShader, "clouds", 2, *cloudTexture, *sampler);
+		//Probably better way of doing this, but tired!!
+		bonobo::setUniform(*terrainShader, "origin_x", originPoint[0]);
+		bonobo::setUniform(*terrainShader, "origin_y", originPoint[1]);
+		bonobo::setUniform(*terrainShader, "origin_z", originPoint[2]);
+		bonobo::setUniform(*terrainShader, "ResY", (float)RES_Y);
+		bonobo::setUniform(*terrainShader, "ResX", (float)RES_X);
+
+		glBindVertexArray(vao);
+		bonobo::checkForErrors();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboTerrain);
+		bonobo::checkForErrors();
+		glEnableVertexAttribArray(0);
+		bonobo::checkForErrors();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		bonobo::checkForErrors();
+
+		GLStateInspection::CaptureSnapshot("Terrain");
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glDrawArrays(GL_POINTS, 0, nbr_voxelPoints);
+		bonobo::checkForErrors();
+
+		glDisableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindSampler(2u, 0u);
+		bonobo::checkForErrors();
+		glBindSampler(1u, 0u);
+		bonobo::checkForErrors();
+		glBindSampler(0u, 0u);
+		bonobo::checkForErrors();
+		glBindTexture(GL_TEXTURE_3D, 0);
+		glBindTexture(GL_TEXTURE_1D, 0);
+		glBindVertexArray(0u);
+		bonobo::checkForErrors();
+
+		GLStateInspection::CaptureSnapshot("Water");
+		bonobo::checkForErrors();*/
 
 
-		//output stuff
-		//gSimpleDraw.Texture(v2f(-0.95f, -0.95f), v2f(-0.55f, -0.55f), *rtTestTexture3D, v4i(0, 1, 2, -1));
 
+		// Render window
 		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
-										   //Log::View::Render();
+		//Log::View::Render();
 		ImGui::Render();
 
 		window->Swap();
@@ -537,314 +440,8 @@ void Terrain::run()
 	vao = 0u;
 }
 
-float Terrain::turbulence(int x, int y, int z)
-{
-	float size = (float) DENSITY_SIZE;
-	double value = 0.0, initialSize = size;
-
-	while (size >= 1)
-	{
-		value += smoothNoise(x / size, y / size, z / size) * size;
-		size /= 2.0;
-	}
-
-	return (128.0 * value / initialSize);
-}
-
-float Terrain::smoothNoise(int x, int y, int z)
-{
-	//get fractional part of x and y
-	double fractX = rand();
-	double fractY = rand();
-	double fractZ = rand();
-
-	//wrap around
-	int x1 = (int(x) + DENSITY_SIZE) % DENSITY_SIZE;
-	int y1 = (int(y) + DENSITY_SIZE) % DENSITY_SIZE;
-	int z1 = (int(z) + DENSITY_SIZE) % DENSITY_SIZE;
-
-	//neighbor values
-	int x2 = (x1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
-	int y2 = (y1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
-	int z2 = (z1 + DENSITY_SIZE - 1) % DENSITY_SIZE;
-
-	//smooth the noise with bilinear interpolation
-	double value = 0.0;
-	value += fractX       * fractY       * fractZ       * noise[x1][y1][z1];
-	value += fractX       * (1 - fractY) * fractZ       * noise[x1][y2][z1];
-	value += (1 - fractX) * fractY       * fractZ       * noise[x2][y1][z1];
-	value += (1 - fractX) * (1 - fractY) * fractZ       * noise[x2][y2][z1];
-
-	value += fractX       * fractY       * (1 - fractZ) * noise[x1][y1][z2];
-	value += fractX       * (1 - fractY) * (1 - fractZ) * noise[x1][y2][z2];
-	value += (1 - fractX) * fractY       * (1 - fractZ) * noise[x2][y1][z2];
-	value += (1 - fractX) * (1 - fractY) * (1 - fractZ) * noise[x2][y2][z2];
-
-	return value;
-}
-
 int * Terrain::createLookupTable() 
 {
-	/*static int faces[256 * 15] =
-	{
-		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 2, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 8, 3, 1, 2, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 2, 11, 0, 2, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		2, 8, 3, 2, 11, 8, 11, 9, 8, -1, -1, -1, -1, -1, -1,
-		3, 10, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 10, 2, 8, 10, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 9, 0, 2, 3, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 10, 2, 1, 9, 10, 9, 8, 10, -1, -1, -1, -1, -1, -1,
-		3, 11, 1, 10, 11, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 11, 1, 0, 8, 11, 8, 10, 11, -1, -1, -1, -1, -1, -1,
-		3, 9, 0, 3, 10, 9, 10, 11, 9, -1, -1, -1, -1, -1, -1,
-		9, 8, 11, 11, 8, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 3, 0, 7, 3, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 1, 9, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 1, 9, 4, 7, 1, 7, 3, 1, -1, -1, -1, -1, -1, -1,
-		1, 2, 11, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 4, 7, 3, 0, 4, 1, 2, 11, -1, -1, -1, -1, -1, -1,
-		9, 2, 11, 9, 0, 2, 8, 4, 7, -1, -1, -1, -1, -1, -1,
-		2, 11, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4, -1, -1, -1,
-		8, 4, 7, 3, 10, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		10, 4, 7, 10, 2, 4, 2, 0, 4, -1, -1, -1, -1, -1, -1,
-		9, 0, 1, 8, 4, 7, 2, 3, 10, -1, -1, -1, -1, -1, -1,
-		4, 7, 10, 9, 4, 10, 9, 10, 2, 9, 2, 1, -1, -1, -1,
-		3, 11, 1, 3, 10, 11, 7, 8, 4, -1, -1, -1, -1, -1, -1,
-		1, 10, 11, 1, 4, 10, 1, 0, 4, 7, 10, 4, -1, -1, -1,
-		4, 7, 8, 9, 0, 10, 9, 10, 11, 10, 0, 3, -1, -1, -1,
-		4, 7, 10, 4, 10, 9, 9, 10, 11, -1, -1, -1, -1, -1, -1,
-		9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 5, 4, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 5, 4, 1, 5, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		8, 5, 4, 8, 3, 5, 3, 1, 5, -1, -1, -1, -1, -1, -1,
-		1, 2, 11, 9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 0, 8, 1, 2, 11, 4, 9, 5, -1, -1, -1, -1, -1, -1,
-		5, 2, 11, 5, 4, 2, 4, 0, 2, -1, -1, -1, -1, -1, -1,
-		2, 11, 5, 3, 2, 5, 3, 5, 4, 3, 4, 8, -1, -1, -1,
-		9, 5, 4, 2, 3, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 10, 2, 0, 8, 10, 4, 9, 5, -1, -1, -1, -1, -1, -1,
-		0, 5, 4, 0, 1, 5, 2, 3, 10, -1, -1, -1, -1, -1, -1,
-		2, 1, 5, 2, 5, 8, 2, 8, 10, 4, 8, 5, -1, -1, -1,
-		11, 3, 10, 11, 1, 3, 9, 5, 4, -1, -1, -1, -1, -1, -1,
-		4, 9, 5, 0, 8, 1, 8, 11, 1, 8, 10, 11, -1, -1, -1,
-		5, 4, 0, 5, 0, 10, 5, 10, 11, 10, 0, 3, -1, -1, -1,
-		5, 4, 8, 5, 8, 11, 11, 8, 10, -1, -1, -1, -1, -1, -1,
-		9, 7, 8, 5, 7, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 3, 0, 9, 5, 3, 5, 7, 3, -1, -1, -1, -1, -1, -1,
-		0, 7, 8, 0, 1, 7, 1, 5, 7, -1, -1, -1, -1, -1, -1,
-		1, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 7, 8, 9, 5, 7, 11, 1, 2, -1, -1, -1, -1, -1, -1,
-		11, 1, 2, 9, 5, 0, 5, 3, 0, 5, 7, 3, -1, -1, -1,
-		8, 0, 2, 8, 2, 5, 8, 5, 7, 11, 5, 2, -1, -1, -1,
-		2, 11, 5, 2, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1,
-		7, 9, 5, 7, 8, 9, 3, 10, 2, -1, -1, -1, -1, -1, -1,
-		9, 5, 7, 9, 7, 2, 9, 2, 0, 2, 7, 10, -1, -1, -1,
-		2, 3, 10, 0, 1, 8, 1, 7, 8, 1, 5, 7, -1, -1, -1,
-		10, 2, 1, 10, 1, 7, 7, 1, 5, -1, -1, -1, -1, -1, -1,
-		9, 5, 8, 8, 5, 7, 11, 1, 3, 11, 3, 10, -1, -1, -1,
-		5, 7, 10, 5, 10, 11, 1, 0, 9, -1, -1, -1, -1, -1, -1,
-		10, 11, 5, 10, 5, 7, 8, 0, 3, -1, -1, -1, -1, -1, -1,
-		10, 11, 5, 7, 10, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		11, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 8, 3, 5, 11, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 0, 1, 5, 11, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 8, 3, 1, 9, 8, 5, 11, 6, -1, -1, -1, -1, -1, -1,
-		1, 6, 5, 2, 6, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 6, 5, 1, 2, 6, 3, 0, 8, -1, -1, -1, -1, -1, -1,
-		9, 6, 5, 9, 0, 6, 0, 2, 6, -1, -1, -1, -1, -1, -1,
-		5, 9, 8, 5, 8, 2, 5, 2, 6, 3, 2, 8, -1, -1, -1,
-		2, 3, 10, 11, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		10, 0, 8, 10, 2, 0, 11, 6, 5, -1, -1, -1, -1, -1, -1,
-		0, 1, 9, 2, 3, 10, 5, 11, 6, -1, -1, -1, -1, -1, -1,
-		5, 11, 6, 1, 9, 2, 9, 10, 2, 9, 8, 10, -1, -1, -1,
-		6, 3, 10, 6, 5, 3, 5, 1, 3, -1, -1, -1, -1, -1, -1,
-		0, 8, 10, 0, 10, 5, 0, 5, 1, 5, 10, 6, -1, -1, -1,
-		3, 10, 6, 0, 3, 6, 0, 6, 5, 0, 5, 9, -1, -1, -1,
-		6, 5, 9, 6, 9, 10, 10, 9, 8, -1, -1, -1, -1, -1, -1,
-		5, 11, 6, 4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 3, 0, 4, 7, 3, 6, 5, 11, -1, -1, -1, -1, -1, -1,
-		1, 9, 0, 5, 11, 6, 8, 4, 7, -1, -1, -1, -1, -1, -1,
-		11, 6, 5, 1, 9, 7, 1, 7, 3, 7, 9, 4, -1, -1, -1,
-		6, 1, 2, 6, 5, 1, 4, 7, 8, -1, -1, -1, -1, -1, -1,
-		1, 2, 5, 5, 2, 6, 3, 0, 4, 3, 4, 7, -1, -1, -1,
-		8, 4, 7, 9, 0, 5, 0, 6, 5, 0, 2, 6, -1, -1, -1,
-		7, 3, 2, 7, 2, 6, 5, 9, 4, -1, -1, -1, -1, -1, -1,
-		3, 10, 2, 7, 8, 4, 11, 6, 5, -1, -1, -1, -1, -1, -1,
-		5, 11, 6, 4, 7, 2, 4, 2, 0, 2, 7, 10, -1, -1, -1,
-		0, 1, 9, 4, 7, 8, 2, 3, 10, 5, 11, 6, -1, -1, -1,
-		9, 4, 5, 11, 2, 1, 7, 10, 6, -1, -1, -1, -1, -1, -1,
-		8, 4, 7, 3, 10, 5, 3, 5, 1, 5, 10, 6, -1, -1, -1,
-		5, 1, 0, 5, 0, 4, 7, 10, 6, -1, -1, -1, -1, -1, -1,
-		0, 3, 8, 4, 5, 9, 10, 6, 7, -1, -1, -1, -1, -1, -1,
-		4, 5, 9, 7, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		11, 4, 9, 6, 4, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 11, 6, 4, 9, 11, 0, 8, 3, -1, -1, -1, -1, -1, -1,
-		11, 0, 1, 11, 6, 0, 6, 4, 0, -1, -1, -1, -1, -1, -1,
-		8, 3, 1, 8, 1, 6, 8, 6, 4, 6, 1, 11, -1, -1, -1,
-		1, 4, 9, 1, 2, 4, 2, 6, 4, -1, -1, -1, -1, -1, -1,
-		3, 0, 8, 1, 2, 9, 2, 4, 9, 2, 6, 4, -1, -1, -1,
-		0, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		8, 3, 2, 8, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1,
-		11, 4, 9, 11, 6, 4, 10, 2, 3, -1, -1, -1, -1, -1, -1,
-		0, 8, 2, 2, 8, 10, 4, 9, 11, 4, 11, 6, -1, -1, -1,
-		3, 10, 2, 0, 1, 6, 0, 6, 4, 6, 1, 11, -1, -1, -1,
-		6, 4, 8, 6, 8, 10, 2, 1, 11, -1, -1, -1, -1, -1, -1,
-		9, 6, 4, 9, 3, 6, 9, 1, 3, 10, 6, 3, -1, -1, -1,
-		8, 10, 6, 8, 6, 4, 9, 1, 0, -1, -1, -1, -1, -1, -1,
-		3, 10, 6, 3, 6, 0, 0, 6, 4, -1, -1, -1, -1, -1, -1,
-		6, 4, 8, 10, 6, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		7, 11, 6, 7, 8, 11, 8, 9, 11, -1, -1, -1, -1, -1, -1,
-		0, 7, 3, 0, 11, 7, 0, 9, 11, 6, 7, 11, -1, -1, -1,
-		11, 6, 7, 1, 11, 7, 1, 7, 8, 1, 8, 0, -1, -1, -1,
-		11, 6, 7, 11, 7, 1, 1, 7, 3, -1, -1, -1, -1, -1, -1,
-		1, 2, 6, 1, 6, 8, 1, 8, 9, 8, 6, 7, -1, -1, -1,
-		2, 6, 7, 2, 7, 3, 0, 9, 1, -1, -1, -1, -1, -1, -1,
-		7, 8, 0, 7, 0, 6, 6, 0, 2, -1, -1, -1, -1, -1, -1,
-		7, 3, 2, 6, 7, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		2, 3, 10, 11, 6, 8, 11, 8, 9, 8, 6, 7, -1, -1, -1,
-		2, 0, 9, 2, 9, 11, 6, 7, 10, -1, -1, -1, -1, -1, -1,
-		1, 11, 2, 3, 8, 0, 6, 7, 10, -1, -1, -1, -1, -1, -1,
-		11, 2, 1, 6, 7, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		8, 9, 1, 8, 1, 3, 10, 6, 7, -1, -1, -1, -1, -1, -1,
-		0, 9, 1, 10, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 8, 0, 10, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		7, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		7, 6, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 0, 8, 10, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 1, 9, 10, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		8, 1, 9, 8, 3, 1, 10, 7, 6, -1, -1, -1, -1, -1, -1,
-		11, 1, 2, 6, 10, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 2, 11, 3, 0, 8, 6, 10, 7, -1, -1, -1, -1, -1, -1,
-		2, 9, 0, 2, 11, 9, 6, 10, 7, -1, -1, -1, -1, -1, -1,
-		2, 10, 3, 11, 8, 6, 11, 9, 8, 8, 7, 6, -1, -1, -1,
-		7, 2, 3, 6, 2, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		7, 0, 8, 7, 6, 0, 6, 2, 0, -1, -1, -1, -1, -1, -1,
-		2, 7, 6, 2, 3, 7, 0, 1, 9, -1, -1, -1, -1, -1, -1,
-		1, 6, 2, 1, 8, 6, 1, 9, 8, 8, 7, 6, -1, -1, -1,
-		11, 7, 6, 11, 1, 7, 1, 3, 7, -1, -1, -1, -1, -1, -1,
-		11, 7, 6, 1, 7, 11, 1, 8, 7, 1, 0, 8, -1, -1, -1,
-		0, 3, 7, 0, 7, 11, 0, 11, 9, 6, 11, 7, -1, -1, -1,
-		7, 6, 11, 7, 11, 8, 8, 11, 9, -1, -1, -1, -1, -1, -1,
-		6, 8, 4, 10, 8, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 6, 10, 3, 0, 6, 0, 4, 6, -1, -1, -1, -1, -1, -1,
-		8, 6, 10, 8, 4, 6, 9, 0, 1, -1, -1, -1, -1, -1, -1,
-		9, 4, 6, 9, 6, 3, 9, 3, 1, 10, 3, 6, -1, -1, -1,
-		6, 8, 4, 6, 10, 8, 2, 11, 1, -1, -1, -1, -1, -1, -1,
-		3, 2, 10, 0, 6, 1, 0, 4, 6, 6, 11, 1, -1, -1, -1,
-		0, 2, 8, 2, 10, 8, 4, 11, 9, 4, 6, 11, -1, -1, -1,
-		11, 9, 4, 11, 4, 6, 10, 3, 2, -1, -1, -1, -1, -1, -1,
-		8, 2, 3, 8, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1,
-		0, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 8, 0, 1, 9, 2, 2, 9, 4, 2, 4, 6, -1, -1, -1,
-		1, 9, 4, 1, 4, 2, 2, 4, 6, -1, -1, -1, -1, -1, -1,
-		8, 1, 3, 8, 6, 1, 8, 4, 6, 6, 11, 1, -1, -1, -1,
-		11, 1, 0, 11, 0, 6, 6, 0, 4, -1, -1, -1, -1, -1, -1,
-		4, 6, 11, 4, 11, 9, 0, 3, 8, -1, -1, -1, -1, -1, -1,
-		11, 9, 4, 6, 11, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 9, 5, 7, 6, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 8, 3, 4, 9, 5, 10, 7, 6, -1, -1, -1, -1, -1, -1,
-		5, 0, 1, 5, 4, 0, 7, 6, 10, -1, -1, -1, -1, -1, -1,
-		8, 7, 4, 3, 5, 10, 3, 1, 5, 5, 6, 10, -1, -1, -1,
-		9, 5, 4, 11, 1, 2, 7, 6, 10, -1, -1, -1, -1, -1, -1,
-		0, 9, 1, 4, 8, 7, 2, 10, 3, 5, 6, 11, -1, -1, -1,
-		5, 6, 11, 4, 2, 7, 4, 0, 2, 2, 10, 7, -1, -1, -1,
-		3, 2, 10, 7, 4, 8, 11, 5, 6, -1, -1, -1, -1, -1, -1,
-		7, 2, 3, 7, 6, 2, 5, 4, 9, -1, -1, -1, -1, -1, -1,
-		8, 7, 4, 9, 5, 0, 0, 5, 6, 0, 6, 2, -1, -1, -1,
-		1, 5, 2, 5, 6, 2, 3, 4, 0, 3, 7, 4, -1, -1, -1,
-		6, 2, 1, 6, 1, 5, 4, 8, 7, -1, -1, -1, -1, -1, -1,
-		11, 5, 6, 1, 7, 9, 1, 3, 7, 7, 4, 9, -1, -1, -1,
-		1, 0, 9, 5, 6, 11, 8, 7, 4, -1, -1, -1, -1, -1, -1,
-		4, 0, 3, 4, 3, 7, 6, 11, 5, -1, -1, -1, -1, -1, -1,
-		5, 6, 11, 4, 8, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		6, 9, 5, 6, 10, 9, 10, 8, 9, -1, -1, -1, -1, -1, -1,
-		3, 6, 10, 0, 6, 3, 0, 5, 6, 0, 9, 5, -1, -1, -1,
-		0, 10, 8, 0, 5, 10, 0, 1, 5, 5, 6, 10, -1, -1, -1,
-		6, 10, 3, 6, 3, 5, 5, 3, 1, -1, -1, -1, -1, -1, -1,
-		5, 6, 11, 1, 2, 9, 9, 2, 10, 9, 10, 8, -1, -1, -1,
-		0, 9, 1, 2, 10, 3, 5, 6, 11, -1, -1, -1, -1, -1, -1,
-		10, 8, 0, 10, 0, 2, 11, 5, 6, -1, -1, -1, -1, -1, -1,
-		2, 10, 3, 11, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		5, 8, 9, 5, 2, 8, 5, 6, 2, 3, 8, 2, -1, -1, -1,
-		9, 5, 6, 9, 6, 0, 0, 6, 2, -1, -1, -1, -1, -1, -1,
-		1, 5, 6, 1, 6, 2, 3, 8, 0, -1, -1, -1, -1, -1, -1,
-		1, 5, 6, 2, 1, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 3, 8, 1, 8, 9, 5, 6, 11, -1, -1, -1, -1, -1, -1,
-		9, 1, 0, 5, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 3, 8, 5, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		11, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		10, 5, 11, 7, 5, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		10, 5, 11, 10, 7, 5, 8, 3, 0, -1, -1, -1, -1, -1, -1,
-		5, 10, 7, 5, 11, 10, 1, 9, 0, -1, -1, -1, -1, -1, -1,
-		9, 8, 5, 8, 7, 5, 11, 3, 1, 11, 10, 3, -1, -1, -1,
-		10, 1, 2, 10, 7, 1, 7, 5, 1, -1, -1, -1, -1, -1, -1,
-		2, 10, 3, 0, 8, 1, 1, 8, 7, 1, 7, 5, -1, -1, -1,
-		9, 7, 5, 9, 2, 7, 9, 0, 2, 2, 10, 7, -1, -1, -1,
-		7, 5, 9, 7, 9, 8, 3, 2, 10, -1, -1, -1, -1, -1, -1,
-		2, 5, 11, 2, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1,
-		8, 2, 0, 8, 5, 2, 8, 7, 5, 11, 2, 5, -1, -1, -1,
-		11, 2, 1, 9, 0, 5, 5, 0, 3, 5, 3, 7, -1, -1, -1,
-		9, 8, 7, 9, 7, 5, 11, 2, 1, -1, -1, -1, -1, -1, -1,
-		1, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 8, 7, 0, 7, 1, 1, 7, 5, -1, -1, -1, -1, -1, -1,
-		9, 0, 3, 9, 3, 5, 5, 3, 7, -1, -1, -1, -1, -1, -1,
-		9, 8, 7, 5, 9, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		5, 8, 4, 5, 11, 8, 11, 10, 8, -1, -1, -1, -1, -1, -1,
-		5, 0, 4, 5, 10, 0, 5, 11, 10, 10, 3, 0, -1, -1, -1,
-		4, 5, 9, 0, 1, 8, 8, 1, 11, 8, 11, 10, -1, -1, -1,
-		11, 10, 3, 11, 3, 1, 9, 4, 5, -1, -1, -1, -1, -1, -1,
-		2, 5, 1, 2, 8, 5, 2, 10, 8, 4, 5, 8, -1, -1, -1,
-		0, 4, 5, 0, 5, 1, 2, 10, 3, -1, -1, -1, -1, -1, -1,
-		0, 2, 10, 0, 10, 8, 4, 5, 9, -1, -1, -1, -1, -1, -1,
-		9, 4, 5, 2, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		2, 5, 11, 3, 5, 2, 3, 4, 5, 3, 8, 4, -1, -1, -1,
-		5, 11, 2, 5, 2, 4, 4, 2, 0, -1, -1, -1, -1, -1, -1,
-		3, 8, 0, 1, 11, 2, 4, 5, 9, -1, -1, -1, -1, -1, -1,
-		1, 11, 2, 9, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		8, 4, 5, 8, 5, 3, 3, 5, 1, -1, -1, -1, -1, -1, -1,
-		0, 4, 5, 1, 0, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 4, 5, 0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 10, 7, 4, 9, 10, 9, 11, 10, -1, -1, -1, -1, -1, -1,
-		4, 8, 7, 9, 10, 0, 9, 11, 10, 10, 3, 0, -1, -1, -1,
-		1, 11, 10, 1, 10, 4, 1, 4, 0, 7, 4, 10, -1, -1, -1,
-		3, 1, 11, 3, 11, 10, 7, 4, 8, -1, -1, -1, -1, -1, -1,
-		4, 10, 7, 9, 10, 4, 9, 2, 10, 9, 1, 2, -1, -1, -1,
-		9, 1, 0, 8, 7, 4, 2, 10, 3, -1, -1, -1, -1, -1, -1,
-		10, 7, 4, 10, 4, 2, 2, 4, 0, -1, -1, -1, -1, -1, -1,
-		8, 7, 4, 3, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		2, 9, 11, 2, 7, 9, 2, 3, 7, 7, 4, 9, -1, -1, -1,
-		9, 11, 2, 9, 2, 0, 8, 7, 4, -1, -1, -1, -1, -1, -1,
-		3, 7, 4, 3, 4, 0, 1, 11, 2, -1, -1, -1, -1, -1, -1,
-		1, 11, 2, 8, 7, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 9, 1, 4, 1, 7, 7, 1, 3, -1, -1, -1, -1, -1, -1,
-		0, 9, 1, 8, 7, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 0, 3, 7, 4, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		4, 8, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		9, 11, 8, 11, 10, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 0, 9, 3, 9, 10, 10, 9, 11, -1, -1, -1, -1, -1, -1,
-		0, 1, 11, 0, 11, 8, 8, 11, 10, -1, -1, -1, -1, -1, -1,
-		3, 1, 11, 10, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 2, 10, 1, 10, 9, 9, 10, 8, -1, -1, -1, -1, -1, -1,
-		1, 0, 9, 2, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 2, 10, 8, 0, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		3, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		2, 3, 8, 2, 8, 11, 11, 8, 9, -1, -1, -1, -1, -1, -1,
-		9, 11, 2, 0, 9, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 3, 8, 1, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		1, 3, 8, 9, 1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-	};
-	*/
 	static int edges[256 * 15] = 
 	{
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
