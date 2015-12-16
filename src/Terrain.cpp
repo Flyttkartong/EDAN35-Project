@@ -97,8 +97,9 @@ void Terrain::run()
 	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));//v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
 	mCamera.mRotation.x = 1.5;// / 2.0f;
 	mCamera.mRotation.y = -0.3;
-	mCamera.mWorld.PreRotateX(5.9);
+	
 	mCamera.mWorld.SetRotateY(1.5);//fPI / 2.0f);
+	mCamera.mWorld.PreRotateX(5.9);
 	
 
 	mCamera.mMouseSensitivity = 0.003f;
@@ -142,34 +143,39 @@ void Terrain::run()
 	glGenTextures(1, &skyBox->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_CUBE_MAP,skyBox->mId);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
 	int width=512, height=512;
 	unsigned char* image =
 		SOIL_load_image("cloudyhills_posx.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,GL_RGB,width,height,0, GL_RGB, GL_UNSIGNED_INT,image);
+	
 	bonobo::checkForErrors();
 	SOIL_free_image_data(image);
 	image= SOIL_load_image("cloudyhills_negx.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+
+
 	bonobo::checkForErrors();
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_posy.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	
+
 	bonobo::checkForErrors();
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_negy.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+
 	bonobo::checkForErrors();
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_posz.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+
 	bonobo::checkForErrors();
+	
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_negz.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+
 	bonobo::checkForErrors();
 	
 	skyBox->mTarget = bonobo::TEXTURE_CUBE_MAP;
