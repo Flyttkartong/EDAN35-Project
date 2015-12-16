@@ -22,14 +22,15 @@ void main()
 
 	// Offset vertex coordinate to get cube corners ORDER IMPORTANT! See GPU Gems 3, ch 1
 	vec4 pos[8];
-	pos[0] = vertex; // (0, 0, 0) corner
-	pos[3] = vertex + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
-	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
+	pos[0] = vertex; // (0, 0, 0) corners
 	pos[1] = vertex + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
+	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
+	pos[3] = vertex + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
 	pos[4] = vertex + vec4(	0.0f, 	0.0f, 	offset, 0.0f);
-	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
-	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
 	pos[5] = vertex + vec4(	offset, 0.0f, 	offset, 0.0f);
+	pos[6] = vertex + vec4(	offset, offset, offset, 0.0f);
+	pos[7] = vertex + vec4(	0.0f, 	offset, offset, 0.0f);
+	
 	
 	// Create data structure for vertex index pairs	
 	int e[12][2];
