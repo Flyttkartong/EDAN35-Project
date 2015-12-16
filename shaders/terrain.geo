@@ -91,7 +91,8 @@ void main()
 	vec4 out_points[15];
 	for(int i = 0; i < nbr_edges; i++)
 	{
-		out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
+		out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]]) / abs(densities[edges[i][0]] - densities[edges[i][1]]) 
+					  + pos[edges[i][1]] * abs(densities[edges[i][1]]) / abs(densities[edges[i][0]] - densities[edges[i][1]]);
 	}
 	
 	// Create normal for each triangle and output triangle strip + texture coordinates
@@ -119,15 +120,15 @@ void main()
 			out_points[point_index + 1].x / DENSITY_SIZE_FLOAT,
 			out_points[point_index + 1].z / DENSITY_SIZE_FLOAT
 		);
-		gl_Position = model_to_clip_matrix * out_points[3*i+1];
+		gl_Position = model_to_clip_matrix * out_points[point_index + 1];
 		EmitVertex();
 		
 		// Vertex 3
 		texCoord = vec2(
 			out_points[point_index + 2].x / DENSITY_SIZE_FLOAT,
-			out_points[point_index + 2].z/DENSITY_SIZE_FLOAT
+			out_points[point_index + 2].z / DENSITY_SIZE_FLOAT
 		);
-		gl_Position = model_to_clip_matrix * out_points[3*i+2];
+		gl_Position = model_to_clip_matrix * out_points[point_index + 2];
 		EmitVertex();
 		
 		// Done with triangle

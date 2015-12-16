@@ -92,11 +92,11 @@ void Terrain::run()
 	// Setup the camera. 
 	//
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 50.0f);
-	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));
+	mCamera.mWorld.SetTranslate(v3f(60.3, 18.2, 15.0));
 	mCamera.mRotation.x = fPI/2;
-	mCamera.mRotation.y = -fPI / 10;	
+	mCamera.mRotation.y = -fPI / 15;	
 	mCamera.mWorld.PreRotateY(fPI/2);
-	mCamera.mWorld.PreRotateX(-fPI / 10);
+	mCamera.mWorld.PreRotateX(-fPI / 15);
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 2.f;
 
@@ -212,7 +212,7 @@ void Terrain::run()
 				densityFunction3D[x][y][z] = y - 7.f + 0.6f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 1 / (rand() % 4 + 1);
 
 				// Create mountain
-				if (fabs(18.0f + rand() % 10 - x)*fabs(18.0f + rand() % 10 - x) + fabs(15.0f + rand() % 7 - z)*fabs(15.0f + rand() % 7 - z) < 35 && y < 20 - rand() % 3)//20.f-0.9*std::max(30.f- (float) y,0.0f))
+				if (fabs(18.0f + rand() % 5 - x)*fabs(18.0f + rand() % 6 - x) + fabs(15.0f + rand() % 5 - z)*fabs(15.0f + rand() % 4 - z) < 35 && y < 20 - rand() % 3)
 				{
 					densityFunction3D[x][y][z] = -1;
 				}
@@ -226,7 +226,7 @@ void Terrain::run()
 				// Round off terrain
 				if (fabs(15.0f - z)*fabs(15.0f - z) + fabs(15.0f - x)*fabs(15.0f - x) >  (13.0f + rand() % 2)*(15.0f + rand() % 2))
 				{
-					densityFunction3D[x][y][z] = 1;// += (10 + rand() % 5);
+					densityFunction3D[x][y][z] = 1;
 				}
 			}
 		}
@@ -240,12 +240,11 @@ void Terrain::run()
 	glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, GL_RED, GL_FLOAT, densityFunction3D);
 	glBindTexture(GL_TEXTURE_3D, 0);
 
-	//
 	// Check texture values, Reads texture and stores Values in an appropriate array
-	//
-	/*float densityArrayTest[densitySize][densitySize][densitySize];
+	// Note: Currently only prints y-values in (0, i, 0)
+	/*float densityArrayTest[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
 	glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, densityArrayTest);
-	for (int i = 0; i < densitySize; i++)
+	for (int i = 0; i < DENSITY_SIZE; i++)
 	{
 		printf("%f\n", densityArrayTest[0][i][0]);
 	}*/
@@ -460,7 +459,7 @@ void Terrain::run()
 
 
 		//
-		//DrawCall 1: terrain
+		//DrawCall 1: Terrain
 		//
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
@@ -587,7 +586,9 @@ void Terrain::run()
 }
 
 //
-//Function creates an in array of values used as a lookup table by the marching cubes algorithm
+//Function creates an int array of values used as a lookup table for the marching cubes algorithm
+//Slightly modified version of the file made by the author of GPU Gems 3, ch 1. 
+//Downloaded from his website: http://www.geisswerks.com/about_terrain.html, 
 //
 int * Terrain::createLookupTable() 
 {

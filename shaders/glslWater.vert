@@ -36,8 +36,8 @@ void main()
 	vec2 freq = vec2(0.2f, 0.4f);
 	vec2 phase = vec2(0.5f, 1.3f);
 	vec2 sharp = vec2(2.0f, 2.0f);
-	vec2 dir1 = vec2(-1.0f, 0.0f);
-	vec2 dir2 = vec2(-0.7f, 0.7f);
+	vec2 dir1 = vec2(1.0f, 0.0f); //vec2(-1.0f, 0.0f);
+	vec2 dir2 = vec2(0.7f, -0.7f); //vec2(-0.7f, 0.7f);
 
 	// /*Generate sine functions*/
 
@@ -69,7 +69,7 @@ void main()
 
 	vec2 texScale = vec2(8.0f, 4.0f);
 	float bumpTime = mod(time, 100.0f);
-	vec2 bumpSpeed = vec2(-0.05f, 0.0f);
+	vec2 bumpSpeed = vec2(0.05f, 0.0f); //vec2(-0.05f, 0.0f);
 
 	bumpCoord0.xy = vTexCoord.xy * texScale + bumpTime * bumpSpeed;
 	bumpCoord1.xy = vTexCoord.xy * texScale * 2 + bumpTime * bumpSpeed * 4;
