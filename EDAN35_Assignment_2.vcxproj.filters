@@ -360,5 +360,20 @@
     <None Include="shaders\density.vert">
       <Filter>Resource Files\Shaders\Assignment</Filter>
     </None>
+    <None Include="shaders\glslWater.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\glslWater.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\terrain.frag">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\terrain.geo">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
+    <None Include="shaders\terrain.vert">
+      <Filter>Resource Files\Shaders\Assignment</Filter>
+    </None>
   </ItemGroup>
 </Project>

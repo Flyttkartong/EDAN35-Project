@@ -148,6 +148,8 @@
     <None Include="shaders\fill_gbuffer.vert" />
     <None Include="shaders\fill_shadowmap.frag" />
     <None Include="shaders\fill_shadowmap.vert" />
+    <None Include="shaders\glslWater.frag" />
+    <None Include="shaders\glslWater.vert" />
     <None Include="shaders\MsToArray.frag" />
     <None Include="shaders\resolve_deferred.frag" />
     <None Include="shaders\resolve_deferred.vert" />
@@ -159,6 +161,9 @@
     <None Include="shaders\SimpleTextured.vert" />
     <None Include="shaders\SimpleTexturedArray.frag" />
     <None Include="shaders\SimpleTexturedMS.frag" />
+    <None Include="shaders\terrain.frag" />
+    <None Include="shaders\terrain.geo" />
+    <None Include="shaders\terrain.vert" />
     <None Include="shaders\testing.frag" />
     <None Include="shaders\testing.geo" />
     <None Include="shaders\testing.vert" />
