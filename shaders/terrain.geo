@@ -7,10 +7,6 @@ uniform mat4 model_to_clip_matrix;
 uniform sampler3D density_texture;
 uniform isampler1D edge_texture;
 
-uniform float origin_x;
-uniform float origin_y;
-uniform float origin_z;
-
 layout(points) in;
 
 layout(triangle_strip, max_vertices = 15) out;
@@ -21,13 +17,12 @@ out vec2 texCoord;
 
 void main()
 {
-	vec4 origin = vec4(origin_x, origin_y, origin_z, 0.0f);
 	vec4 vertex = gl_in[0].gl_Position;
 	float offset = 1.0f;
 
-	// Offset vertex coordinate to get cube corners ORDER IMPORTANT!
+	// Offset vertex coordinate to get cube corners ORDER IMPORTANT! See GPU Gems 3, ch 1
 	vec4 pos[8];
-	pos[0] = vertex;
+	pos[0] = vertex; // (0, 0, 0) corner
 	pos[3] = vertex + vec4(	0.0f, 	offset, 0.0f, 	0.0f);
 	pos[2] = vertex + vec4(	offset, offset, 0.0f, 	0.0f);
 	pos[1] = vertex + vec4(	offset, 0.0f, 	0.0f, 	0.0f);
@@ -55,10 +50,10 @@ void main()
 	vec3 v[8];
 	for(int i = 0; i < 8; i++)
 	{
-		v[i] = pos[i].xyz / DENSITY_SIZE_FLOAT;//(pos[i] - origin).xyz;
+		v[i] = pos[i].xyz / DENSITY_SIZE_FLOAT;
 	}
 	
-	// Sample density value in corners and create case number by converting from bit to int. ORDER IMPORTANT!
+	// Sample density value in corners and create case number by converting from bit to int. ORDER IMPORTANT! See GPU Gems 3, ch 1
 	float densities[8];
 	int case_nbr = 0;
 	for(int i = 0; i < 8; i++)
@@ -73,7 +68,7 @@ void main()
 	// Offset case number to get the correct index for edge_texture
 	int case_index = case_nbr * 15;
 	
-	// Fetch edge index from edge_texture and get vertex pair from e[]
+	// Fetch edge index from edge_texture and use it to get vertex pair from e[]
 	int edges[15][2];
 	int edge_index;
 	int nbr_edges = 15;
@@ -92,14 +87,14 @@ void main()
 		}
 	}
 	
-	// Interpolate vertex positions
+	// Interpolate vertex positions from density values on the edges
 	vec4 out_points[15];
 	for(int i = 0; i < nbr_edges; i++)
 	{
 		out_points[i] = pos[edges[i][0]] * abs(densities[edges[i][0]])/abs(densities[edges[i][0]] - densities[edges[i][1]]) + pos[edges[i][1]] * abs(densities[edges[i][1]])/abs(densities[edges[i][0]] - densities[edges[i][1]]);
 	}
 	
-	// Create normal for each triangle and output triangle strip
+	// Create normal for each triangle and output triangle strip + texture coordinates
 	vec3 U, V;
 	int point_index;
 	int nbr_triangles = int(nbr_edges / 3);
