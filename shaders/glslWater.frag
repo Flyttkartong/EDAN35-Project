@@ -4,7 +4,7 @@
 out vec4 fragColor;
 
 /* Cube- and Bumpmaps */
-//uniform samplerCube SkyboxTexture;
+uniform samplerCube SkyboxTexture;
 uniform sampler2D   BumpMapTexture;
 
 /* Tangent basis */
@@ -47,7 +47,7 @@ void main()
 
 	vec4 Color_water = mix(Color_deep, Color_shallow,facing);
 
-	vec4 Color_reflection = vec4(0.0,0.0,0.2,1);//0.8*texture(SkyboxTexture,R);
+	vec4 Color_reflection = /*vec4(0.8,0.8,0.8,1);*/0.8*texture(SkyboxTexture,R);
 
 	// Fresnel
 	float R0 = 0.02037; //Air to water
@@ -55,10 +55,9 @@ void main()
     
 	// Refraction
 	vec3 refraction = vec3(refract(-V,newNormal,1.0/1.33));
-	vec4 Color_refraction = vec4(0,0,0.8,1);//texture(SkyboxTexture,refraction);
+	vec4 Color_refraction = /*vec4(0,0,0.5,1);*/texture(SkyboxTexture,refraction);
 
 	/*Final Color*/
-
 	 fragColor = Color_water + Color_reflection * fresnel + Color_refraction * (1-fresnel); 
 	//fragColor=vec4(1.0f,0.0f,0.0f,1.0f);
 }

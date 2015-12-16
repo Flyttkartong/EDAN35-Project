@@ -11,6 +11,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <../externals/Simple OpenGL Image Library/src/SOIL.h>
 
 #include "AABox.h"
 #ifndef STANDALONE_VERSION
@@ -46,7 +47,8 @@
 #define LIGHT_ANGLE_FALLOFF      0.8f
 #define LIGHT_CUTOFF             0.05f
 
-#define LIGHTS_NB 4
+#define LIGHTS_NB 
+
 
 float noise[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
 
@@ -92,9 +94,13 @@ void Terrain::run()
 	//
 
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 10.0f);
-	mCamera.mWorld.SetTranslate(v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
-	mCamera.mRotation.x = 0;// / 2.0f;
-	mCamera.mWorld.SetRotateY(0);//fPI / 2.0f);
+	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));//v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
+	mCamera.mRotation.x = 1.5;// / 2.0f;
+	mCamera.mRotation.y = -0.3;
+	mCamera.mWorld.PreRotateX(5.9);
+	mCamera.mWorld.SetRotateY(1.5);//fPI / 2.0f);
+	
+
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 0.25f;
 
@@ -103,7 +109,8 @@ void Terrain::run()
 	bonobo::Texture *densityTexture3D = new bonobo::Texture();
 	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 	bonobo::Texture *BumpMapTexture = bonobo::loadTexture2D(RESOURCES_PATH("waves.png"));
-	//implement Cubemap later;
+	bonobo::Texture *skyBox = new bonobo::Texture();
+
 
 
 
@@ -131,8 +138,44 @@ void Terrain::run()
 	}
 
 
+	//Create CubeMap, probably not working, but hey; no errors!
+	glGenTextures(1, &skyBox->mId);
+	bonobo::checkForErrors();
+	glBindTexture(GL_TEXTURE_CUBE_MAP,skyBox->mId);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+	int width=512, height=512;
+	unsigned char* image =
+		SOIL_load_image("cloudyhills_posx.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,GL_RGB,width,height,0, GL_RGB, GL_UNSIGNED_INT,image);
+	bonobo::checkForErrors();
+	SOIL_free_image_data(image);
+	image= SOIL_load_image("cloudyhills_negx.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	bonobo::checkForErrors();
+	SOIL_free_image_data(image);
+	image=SOIL_load_image("cloudyhills_posy.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	bonobo::checkForErrors();
+	SOIL_free_image_data(image);
+	image=SOIL_load_image("cloudyhills_negy.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	bonobo::checkForErrors();
+	SOIL_free_image_data(image);
+	image=SOIL_load_image("cloudyhills_posz.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	bonobo::checkForErrors();
+	SOIL_free_image_data(image);
+	image=SOIL_load_image("cloudyhills_negz.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	bonobo::checkForErrors();
 	
-
+	skyBox->mTarget = bonobo::TEXTURE_CUBE_MAP;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	SOIL_free_image_data(image);
+	
 
 	//Create Mountain
 	const int EDGES_SIZE = 256 * 15;
@@ -314,7 +357,7 @@ void Terrain::run()
 		for (int x = 0; x <= QUAD_GRID_SIZE; x++) {
 			int vertexPosition = y*(QUAD_GRID_SIZE + 1) + x;
 			vertices[vertexPosition].x = (x*delta - 1.0) * scale;
-			vertices[vertexPosition].y = 20.0f;
+			vertices[vertexPosition].y = 0.0f;
 			vertices[vertexPosition].z = (y*delta - 1.0) * scale;
 			texcoords[vertexPosition].x = x*delta;
 			texcoords[vertexPosition].y = y*delta;
@@ -416,7 +459,7 @@ void Terrain::run()
 
 	//create testure sampler
 	bonobo::Sampler *sampler = bonobo::loadSampler();
-	//bonobo::Sampler *oceanSampler = bonobo::loadSampler();
+	bonobo::Sampler *oceanSampler = bonobo::loadSampler();
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
@@ -450,7 +493,7 @@ void Terrain::run()
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.4f, 0.4f, 1.0f, 1.0f);
+		glClearColor(0.53f, 0.8f, 0.98f, 1.0f);
 		
 		glClearDepthf(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -509,10 +552,12 @@ void Terrain::run()
 		glUseProgram(oceanShader->mId);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_2D, BumpMapTexture->mId);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
 		bonobo::setUniform(*oceanShader, "ModelViewProjectionMatrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::setUniform(*oceanShader, "vCameraPos", mCamera.mWorld.GetTranslation());
 		bonobo::setUniform(*oceanShader, "time", float(nowTime));
-		bonobo::bindTextureSampler(*oceanShader, "density_texture", 3, *BumpMapTexture, *sampler);
+		bonobo::bindTextureSampler(*oceanShader, "BumpMapTexture", 0, *BumpMapTexture, *oceanSampler);
+		bonobo::bindTextureSampler(*oceanShader, "SkyboxTexture", 1, *skyBox, *oceanSampler);
 		bonobo::checkForErrors();
 
 		glBindVertexArray(gVaoID);
@@ -527,12 +572,17 @@ void Terrain::run()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		bonobo::checkForErrors();
+		glBindSampler(1u, 0u);
+		bonobo::checkForErrors();
 		glBindSampler(0u, 0u);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_2D, 0);
+		bonobo::checkForErrors();
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		bonobo::checkForErrors();
-
+		printf("CamPos: x: %f, y: %f, z: %f\n Rot: x: %f, y: %f\n\n", mCamera.mWorld.GetTranslation().x, mCamera.mWorld.GetTranslation().y, mCamera.mWorld.GetTranslation().z, mCamera.mRotation.x, mCamera.mRotation.y);
 
 		// Render window
 		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window

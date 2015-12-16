@@ -44,7 +44,7 @@ void main()
 	float Gfunc1 = pow(amp.x * ( sin( (dir1.x*vPosition.x + dir1.y*vPosition.z) * freq.x + time) * 0.5 + 0.5),sharp.x);
 	float Gfunc2 = pow(amp.x * ( sin( (dir2.x*vPosition.x + dir2.y*vPosition.z) * freq.y + time) * 0.5 + 0.5),sharp.y);
 
-	float Hfunc = Gfunc1 + Gfunc2;
+	float Hfunc = Gfunc1 + Gfunc2+3.f;
 
 	float HdiffX = amp.x/2 * sharp.x * pow(sin( (dir1.x*vPosition.x + dir1.y*vPosition.z) * freq.x + time),sharp.x-1) * cos((dir1.x*vPosition.x + dir1.y*vPosition.z) * freq.x + time) * dir1.x * freq.x
 					+ amp.y/2 * sharp.y * pow(sin( (dir2.x*vPosition.z + dir2.y*vPosition.z) * freq.y + time),sharp.y-1) * cos((dir2.x*vPosition.x + dir2.y*vPosition.z) * freq.y + time) * dir2.x * freq.y;
