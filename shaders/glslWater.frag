@@ -20,7 +20,8 @@ in vec2	bumpCoord0,
 		bumpCoord1,
 		bumpCoord2;
 
-
+in vec3 position;
+		
 void main()
 {
 	//TODO: add color, reflection, animated bump mapping, refraction and fresnel
@@ -47,7 +48,7 @@ void main()
 
 	vec4 Color_water = mix(Color_deep, Color_shallow,facing);
 
-	vec4 Color_reflection = vec4(0.8,0.8,0.8,1);//0.8*texture(SkyboxTexture,R);
+	vec4 Color_reflection = 0.5 * vec4(0.53,0.8,0.98,1);//0.8*texture(SkyboxTexture,R);
 
 	// Fresnel
 	float R0 = 0.02037; //Air to water
@@ -57,7 +58,16 @@ void main()
 	vec3 refraction = vec3(refract(-V,newNormal,1.0/1.33));
 	vec4 Color_refraction = vec4(0,0,0.2,1);//texture(SkyboxTexture,refraction);
 
-	/*Final Color*/
-	 fragColor = Color_water + Color_reflection * fresnel + Color_refraction * (1-fresnel); 
-	//fragColor=vec4(1.0f,0.0f,0.0f,1.0f);
+	//float random1 = 5 * fract(sin(dot(N.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	//float random2 = 4 * fract(sin(dot(position.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	vec4 foam = vec4(0, 0, 0, 1);
+	float foam_radius = (abs(15.0f - position.z)*abs(15.0f - position.z) + abs(15.0f - position.x)*abs(15.0f - position.x) + 0.2) / (30*30);
+	foam = 1/(foam_radius*foam_radius) * vec4(0.05, 0.05, 0.05, 1);
+	
+	/*Semi-Final Color*/
+	vec4 out_water_color = Color_water + Color_reflection * fresnel + Color_refraction * (1-fresnel) + foam; 
+	
+	float world_radius = (abs(15.f - position.z)*abs(15.f - position.z) + abs(15.f - position.x)*abs(15.f - position.x) + 0.2) / (80*80);
+	float distance_multiplier = min(1/(world_radius * world_radius), 1);
+	fragColor = distance_multiplier * out_water_color + (1 - distance_multiplier) * vec4(0.7, 0.8, 0.9, 1);//vec4(0.53,0.8,0.98,1);
 }

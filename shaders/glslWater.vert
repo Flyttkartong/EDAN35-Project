@@ -24,6 +24,7 @@ out vec2	bumpCoord0,
 			bumpCoord1,
 			bumpCoord2;
 
+out vec3 position;
 
 void main()
 {
@@ -75,5 +76,6 @@ void main()
 	bumpCoord1.xy = vTexCoord.xy*texScale*2 + bumpTime*bumpSpeed*4;
 	bumpCoord2.xy = vTexCoord.xy*texScale*4 + bumpTime*bumpSpeed*8;
 	
+	position = P.xyz;
 	gl_Position = ModelViewProjectionMatrix * P;
 }

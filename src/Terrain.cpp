@@ -93,7 +93,7 @@ void Terrain::run()
 	// Setup the camera. 
 	//
 
-	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 10.0f);
+	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 50.0f);
 	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));//v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
 	mCamera.mRotation.x = fPI/2;// / 2.0f;
 	mCamera.mRotation.y = -fPI / 10;
@@ -103,7 +103,7 @@ void Terrain::run()
 	
 
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = sceneScale * 0.25f;
+	mCamera.mMovementSpeed = sceneScale * 2.f;
 
 	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
 	bonobo::Texture *edgeTexture = new bonobo::Texture();
@@ -342,7 +342,7 @@ void Terrain::run()
 	//Ocean test:
 	//
 	// constants
-	const int QUAD_GRID_SIZE = 16;
+	const int QUAD_GRID_SIZE = 150;
 	const int NR_VERTICES = (QUAD_GRID_SIZE + 1)*(QUAD_GRID_SIZE + 1);
 	const int NR_TRIANGLES = 2 * QUAD_GRID_SIZE*QUAD_GRID_SIZE;
 	const int NR_INDICES = 3 * NR_TRIANGLES;
@@ -357,7 +357,7 @@ void Terrain::run()
 	GLuint gIndexID=0u;		 // ID for vertex array object
 
 							 //Generate grid positions
-	const float scale = 100.0f;
+	const float scale = 250.0f;
 	const float delta = 2.0f / QUAD_GRID_SIZE;
 	
 	vec3f* vertices = new vec3f[NR_VERTICES];
@@ -389,7 +389,7 @@ void Terrain::run()
 			indices[6 * indexPosition + 3] = y    *(QUAD_GRID_SIZE + 1) + x;    //bl
 			indices[6 * indexPosition + 5] = (y + 1)*(QUAD_GRID_SIZE + 1) + x + 1;//tr
 			indices[6 * indexPosition + 4] = (y + 1)*(QUAD_GRID_SIZE + 1) + x;    //tl
-			printf("%d\n%d\n%d\n%d\n%d\n%d\n", indices[6 * indexPosition], indices[6 * indexPosition+1],indices[6 * indexPosition+2], indices[6 * indexPosition+3], indices[6 * indexPosition+4], indices[6 * indexPosition+5]);
+			//printf("%d\n%d\n%d\n%d\n%d\n%d\n", indices[6 * indexPosition], indices[6 * indexPosition+1],indices[6 * indexPosition+2], indices[6 * indexPosition+3], indices[6 * indexPosition+4], indices[6 * indexPosition+5]);
 		}
 	}
 	
@@ -444,7 +444,7 @@ void Terrain::run()
 
 	GLuint texOcean = glGetAttribLocation(oceanShader->mId, "vTexCoord");
 	bonobo::checkForErrors();
-	printf("%d\n", texOcean);
+	//printf("%d\n", texOcean);
 	glEnableVertexAttribArray(texOcean);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(texOcean, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -504,7 +504,7 @@ void Terrain::run()
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.53f, 0.8f, 0.98f, 1.0f);
+		glClearColor(0.7, 0.8, 0.9, 1.0f);//glClearColor(0.53f, 0.8f, 0.98f, 1.0f);
 		
 		glClearDepthf(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
