@@ -19,4 +19,6 @@ Files relevant to the project are the following:
 * terrain.geo
 * terrain.frag
 
-Note: A minor change has been made in bonobo::loadFrameBufferObject() in GLB.cpp, where glFramebufferTexture2D was replaced by glFramebufferTexture in order for it to work with our code.
+Note: In Visual Studio, the shaders are located in "Resource Files/Shaders/Assignment/", whereas the source code can be found in "Source Files/Project".
+
+A minor change has been made in bonobo::loadFrameBufferObject() in GLB.cpp, where glFramebufferTexture2D was replaced by glFramebufferTexture in order for it to work with our code.
