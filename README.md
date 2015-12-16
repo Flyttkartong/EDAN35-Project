@@ -3,7 +3,7 @@
 
 We have implemented a version of the Marching Cubes algorithm described in GPU Gems 3, chapter 1: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch01.html
 
-The author if this chapter has a webpage where the look up tables can be downloaded: 
+The author of this chapter has a webpage where the Look Up tables can be downloaded: 
 http://www.geisswerks.com/about_terrain.html
 
 Files relevant to the project are the following:
