@@ -11,7 +11,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-//#include <../externals/Simple OpenGL Image Library/src/SOIL.h>  //For imageread for cubemap
+#include <../externals/Simple OpenGL Image Library/src/SOIL.h>  //For imageread for cubemap
 
 #include "AABox.h"
 #ifndef STANDALONE_VERSION
@@ -107,7 +107,7 @@ void Terrain::run()
 	bonobo::Texture *densityTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
 	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 	bonobo::Texture *BumpMapTexture = bonobo::loadTexture2D(RESOURCES_PATH("waves.png"));
-	//bonobo::Texture *skyBox = new bonobo::Texture();
+	bonobo::Texture *skyBox = new bonobo::Texture();
 
 
 	//
@@ -115,23 +115,29 @@ void Terrain::run()
 	//
 	std::string terrainShaderNames[3] = { SHADERS_PATH("terrain.vert"),	SHADERS_PATH("terrain.geo"), SHADERS_PATH("terrain.frag") };
 	std::string oceanShaderNames[2] = { SHADERS_PATH("glslWater.vert"), SHADERS_PATH("glslWater.frag") };
+	std::string skyboxShaderNames[2] = { SHADERS_PATH("skybox.vert"), SHADERS_PATH("skybox.frag") };
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
 	bonobo::ShaderProgram *oceanShader =   bonobo::loadShaderProgram(oceanShaderNames, 2);
-
+	bonobo::ShaderProgram *skyboxShader = bonobo::loadShaderProgram(skyboxShaderNames, 2);
 	
 	if (terrainShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
 	}
 	if (oceanShader == nullptr) {
-		LogError("Failed to load density shader\n");
+		LogError("Failed to load ocean shader\n");
+		exit(-1);
+	}
+	if (skyboxShader == nullptr) {
+		LogError("Failed to load skybox shader\n");
 		exit(-1);
 	}
 
 	//
 	//Create CubeMap, Not functional at the moment;
 	//
-	/*glGenTextures(1, &skyBox->mId);
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &skyBox->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_CUBE_MAP,skyBox->mId);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -143,40 +149,113 @@ void Terrain::run()
 	unsigned char* image =
 		SOIL_load_image("cloudyhills_posx.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,GL_RGB,width,height,0, GL_RGB, GL_UNSIGNED_INT,image);
-	
 	bonobo::checkForErrors();
+
 	SOIL_free_image_data(image);
 	image= SOIL_load_image("cloudyhills_negx.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
-
-
 	bonobo::checkForErrors();
+
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_posy.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
-	
-
 	bonobo::checkForErrors();
+
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_negy.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
-
 	bonobo::checkForErrors();
+
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_posz.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
-
 	bonobo::checkForErrors();
 	
 	SOIL_free_image_data(image);
 	image=SOIL_load_image("cloudyhills_negz.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
-
 	bonobo::checkForErrors();
+
+	//glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	
 	skyBox->mTarget = bonobo::TEXTURE_CUBE_MAP;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	SOIL_free_image_data(image);*/
+	SOIL_free_image_data(image);
+
+
+	
+	/*image = SOIL_load_image("cloudyhills_posx.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, image);
+	SOIL_free_image_data(image);
+	float testArray[512][512];
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_INT, testArray);
+
+	for (int i = 0; i < 10; i++) {
+		printf("%d\n", testArray[i][i]);
+	}
+	delete[] testArray;*/
+
+	// Generate cubemap vertex points and texture coordinates
+	float skybox_vertices[8 * 6] =
+	{
+		-100.0f, -100.0f, -100.0f, -1.0f, -1.0f, -1.0f,	// 0,0,0
+		 100.0f, -100.0f, -100.0f,  1.0f, -1.0f, -1.0f,	// 1,0,0
+		 100.0f,  100.0f, -100.0f,  1.0f,  1.0f, -1.0f,	// 1,1,0
+		-100.0f,  100.0f, -100.0f, -1.0f,  1.0f, -1.0f,	// 0,1,0
+		-100.0f, -100.0f,  100.0f, -1.0f, -1.0f,  1.0f,	// 0,0,1
+		 100.0f, -100.0f,  100.0f,  1.0f, -1.0f,  1.0f,	// 1,0,1
+		 100.0f,  100.0f,  100.0f,  1.0f,  1.0f,  1.0f,	// 1,1,1
+		-100.0f,  100.0f,  100.0f, -1.0f,  1.0f,  1.0f	// 0,1,1
+	};
+
+	// Generate indices for ibo
+	GLuint skybox_indices[6 * 3 * 2] = 
+	{
+		3, 2, 1, 1, 0, 3, // Front
+		5, 6, 7, 4, 5, 7, // Back
+		7, 6, 2, 7, 2, 3, // Up
+		1, 5, 4, 0, 1, 4, // Down
+		7, 3, 0, 4, 7, 0, // Left
+		1, 2, 6, 5, 1, 6  // Right
+	};
+
+	// Create vao for vertices
+	GLuint vaoSkybox;
+	glGenVertexArrays(1, &vaoSkybox);
+	bonobo::checkForErrors();
+	glBindVertexArray(vaoSkybox);
+	bonobo::checkForErrors();
+	
+	// Create vbo for vertices
+	GLuint vboSkybox;
+	glGenBuffers(1, &vboSkybox);
+	glBindBuffer(GL_ARRAY_BUFFER, vboSkybox);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices) * sizeof(float), skybox_vertices, GL_STATIC_DRAW);
+
+	// Create ibo for skybox rendering
+	GLuint iboSkybox;
+	glGenBuffers(1, &iboSkybox);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboSkybox);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skybox_indices) * sizeof(GLuint), skybox_indices, GL_STATIC_DRAW);
+
+	// Bind skybox shader variables
+	GLuint posSkybox = glGetAttribLocation(skyboxShader->mId, "vPosition");
+	glVertexAttribPointer(posSkybox, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	bonobo::checkForErrors();
+	glEnableVertexAttribArray(posSkybox);
+	bonobo::checkForErrors();
+
+	GLuint texSkybox = glGetAttribLocation(skyboxShader->mId, "vTexcoord");
+	bonobo::checkForErrors();
+	glVertexAttribPointer(texSkybox, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	bonobo::checkForErrors();
+	glEnableVertexAttribArray(texSkybox);
+	bonobo::checkForErrors();
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	
 	//
 	//Generate and store LookupTable for the marching cubes algorithm used in shaders in texture
@@ -427,7 +506,7 @@ void Terrain::run()
 	delete[] indices;
 	
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 
 	//create testure sampler, one for each object
@@ -457,16 +536,52 @@ void Terrain::run()
 
 		glDepthFunc(GL_LESS);
 
+		
 
 		//
-		//DrawCall 1: Terrain
+		//DrawCall 1: Skybox
+		//
+		bonobo::setRenderTarget(0, 0);
+		glUseProgram(skyboxShader->mId);
+		glClearColor(0.7, 0.8, 0.9, 1.0f);
+		glClearDepthf(1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		bonobo::checkForErrors();
+
+		//glDepthMask(GL_FALSE);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
+		glUniform1i(glGetUniformLocation(skyboxShader->mId, "cubemap_texture"), 0);
+		glBindSampler(0, sampler->mId);
+
+		bonobo::setUniform(*skyboxShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+		//bonobo::bindTextureSampler(*skyboxShader, "cubemap_texture", 0, *skyBox, *sampler);
+		bonobo::checkForErrors();
+
+		glBindVertexArray(vaoSkybox);
+		bonobo::checkForErrors();
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboSkybox);
+		bonobo::checkForErrors();
+
+		glDrawElements(GL_TRIANGLES, sizeof(skybox_indices), GL_UNSIGNED_INT, 0);
+		bonobo::checkForErrors();
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+
+		//glDepthMask(GL_TRUE);
+
+		//
+		//DrawCall 2: Terrain
 		//
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.7, 0.8, 0.9, 1.0f);		
-		glClearDepthf(1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClearColor(0.7, 0.8, 0.9, 1.0f);
+		//glClearDepthf(1.0f);
+		//glClear(/*GL_COLOR_BUFFER_BIT |*/ GL_DEPTH_BUFFER_BIT);
 		bonobo::checkForErrors();
 		
 		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
@@ -514,7 +629,7 @@ void Terrain::run()
 
 
 		//
-		//DrawCall 2: Ocean
+		//DrawCall 3: Ocean
 		//
 		bonobo::setRenderTarget(0, 0);
 		bonobo::checkForErrors();
