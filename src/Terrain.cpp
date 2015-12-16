@@ -11,7 +11,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-//#include <../externals/Simple OpenGL Image Library/src/SOIL.h>
+//#include <../externals/Simple OpenGL Image Library/src/SOIL.h>  //For imageread for cubemap
 
 #include "AABox.h"
 #ifndef STANDALONE_VERSION
@@ -86,49 +86,39 @@ void Terrain::run()
 	//
 	// Compute the scene bounding box to scale the camera speed, near and far plane accordingly
 	//
-
 	float sceneScale = 10.0;
 
 	//
 	// Setup the camera. 
 	//
-
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 50.0f);
-	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));//v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
-	mCamera.mRotation.x = fPI/2;// / 2.0f;
-	mCamera.mRotation.y = -fPI / 10;
-	
-	mCamera.mWorld.PreRotateY(fPI/2);//fPI / 2.0f);
+	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));
+	mCamera.mRotation.x = fPI/2;
+	mCamera.mRotation.y = -fPI / 10;	
+	mCamera.mWorld.PreRotateY(fPI/2);
 	mCamera.mWorld.PreRotateX(-fPI / 10);
-	
-
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = sceneScale * 2.f;
 
-	bonobo::Texture *rtTestTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_RES_X, DENSITY_RES_Y, DENSITY_RES_Z, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0), 0);
+	//
+	//Setup Textures
+	//
 	bonobo::Texture *edgeTexture = new bonobo::Texture();
-	bonobo::Texture *densityTexture3D = new bonobo::Texture();
+	bonobo::Texture *densityTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
 	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 	bonobo::Texture *BumpMapTexture = bonobo::loadTexture2D(RESOURCES_PATH("waves.png"));
 	//bonobo::Texture *skyBox = new bonobo::Texture();
 
 
-
-
 	//
 	// Load all the shader programs used
 	//
-	std::string densityShaderNames[2] = { SHADERS_PATH("density.vert"), SHADERS_PATH("density.frag") };
 	std::string terrainShaderNames[3] = { SHADERS_PATH("terrain.vert"),	SHADERS_PATH("terrain.geo"), SHADERS_PATH("terrain.frag") };
 	std::string oceanShaderNames[2] = { SHADERS_PATH("glslWater.vert"), SHADERS_PATH("glslWater.frag") };
-	bonobo::ShaderProgram *densityShader = bonobo::loadShaderProgram(densityShaderNames, 2);
 	bonobo::ShaderProgram *terrainShader = bonobo::loadShaderProgram(terrainShaderNames, 3);
 	bonobo::ShaderProgram *oceanShader =   bonobo::loadShaderProgram(oceanShaderNames, 2);
 
-	if (densityShader == nullptr) {
-		LogError("Failed to load density shader\n");
-		exit(-1);
-	}
+	
 	if (terrainShader == nullptr) {
 		LogError("Failed to load density shader\n");
 		exit(-1);
@@ -138,8 +128,9 @@ void Terrain::run()
 		exit(-1);
 	}
 
-
-	//Create CubeMap, probably not working, but hey; no errors!
+	//
+	//Create CubeMap, Not functional at the moment;
+	//
 	/*glGenTextures(1, &skyBox->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_CUBE_MAP,skyBox->mId);
@@ -187,8 +178,9 @@ void Terrain::run()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	SOIL_free_image_data(image);*/
 	
-
-	//Create Mountain
+	//
+	//Generate and store LookupTable for the marching cubes algorithm used in shaders in texture
+	//
 	const int EDGES_SIZE = 256 * 15;
 	int *edges = createLookupTable();
 	
@@ -201,37 +193,14 @@ void Terrain::run()
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32I, EDGES_SIZE, 0, GL_RED_INTEGER, GL_INT, edges);
 	bonobo::checkForErrors();
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0); // to ensure that no interpolation is used
 	edgeTexture->mTarget = bonobo::TEXTURE_1D;
 	glBindTexture(GL_TEXTURE_1D, 0);
 
 	
-	// Create density function
-	//float densityFunction3D[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
-	//for (int x = 0; x < DENSITY_SIZE; x++)
-	//{
-	//	for (int y = 0; y < DENSITY_SIZE; y++)
-	//	{
-	//		for (int z = 0; z < DENSITY_SIZE; z++)
-	//		{
-	//			densityFunction3D[x][y][z] = y - 7.f + 0.6f*cos(x*rand() / (10.0f + rand() % 3) + rand()) - 0.5f*sin(z / (30.f + rand() % 10) + rand() % 2) + 1 / (rand() % 4 + 1);
-	//			if ( fabs(16.0f+rand()%10-x)*fabs(16.0f + rand() % 10 - x) +fabs(15.0f+rand()% 7-z)*fabs(15.0f + rand() % 7 - z) <  30.f-0.9*std::max(30.f- (float) y,0.0f))
-	//			{
-	//				densityFunction3D[x][y][z] = -1;//-=// (10  + rand() % 4);
-	//			}
-	//			if (fabs(16.0f - z)*fabs(16.0f - z) + fabs(17.0f  - y)*fabs(17.0f   - y) <  (5*5  ))
-	//			{
-	//				densityFunction3D[x][y][z] = 1;
-	//			}
-
-	//			else if (fabs(15.0f - z)*fabs(15.0f - z) + fabs(15.0f - x)*fabs(15.0f - x) >  (15.0f+rand()%2)*(15.0f + rand() % 2))
-	//			{
-	//				densityFunction3D[x][y][z] = 1;// += (10 + rand() % 5);
-	//			}
-	//		}
-	//	}
-	//}
-	// Create density function
+	//
+	// Create density function as array
+	//
 	float densityFunction3D[DENSITY_SIZE][DENSITY_SIZE][DENSITY_SIZE];
 	for (int x = 0; x < DENSITY_SIZE; x++)
 	{
@@ -263,29 +232,34 @@ void Terrain::run()
 		}
 	}
 
-	
-	densityTexture3D = bonobo::loadTexture3D(nullptr, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, bonobo::TEXTURE_FLOAT, v4i(32, 0, 0, 0));
+
+	//
+	//Store the density 3D array in a 3D texture for use in geometry shader 
+	//
 	glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
 	glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, DENSITY_SIZE, DENSITY_SIZE, DENSITY_SIZE, GL_RED, GL_FLOAT, densityFunction3D);
 	glBindTexture(GL_TEXTURE_3D, 0);
 
-
-	/*// Check texture values
-	float densityArrayTest[densitySize][densitySize][densitySize];
+	//
+	// Check texture values, Reads texture and stores Values in an appropriate array
+	//
+	/*float densityArrayTest[densitySize][densitySize][densitySize];
 	glGetTexImage(GL_TEXTURE_3D, 0, GL_RED, GL_FLOAT, densityArrayTest);
 	for (int i = 0; i < densitySize; i++)
 	{
 		printf("%f\n", densityArrayTest[0][i][0]);
 	}*/
 
-
-
+	//
+	//create vertex buffer object for voxelgrid
+	//
 	GLuint vboTerrain = 0u;
 	glGenBuffers(1, &vboTerrain);
 	bonobo::checkForErrors();
 
-
-	//Generate grid for shady business
+	//
+	//Generate voxelgrid array
+	//
 	const int voxelgridsize = 32;
 	const int nbr_voxelPoints = voxelgridsize*voxelgridsize*voxelgridsize * 3;
 	float voxelPoints[nbr_voxelPoints];
@@ -297,22 +271,25 @@ void Terrain::run()
 		{
 			for (int z = 0; z < voxelgridsize; z++)
 			{
-				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3] = (float)x;//originPoint[0] + (float) x / 2.0f;
-				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3 + 1] = (float) y;//originPoint[0] + (float) y / 2.0f;
-				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3 + 2] = (float) z;//originPoint[0] + (float) z / 2.0f;
+				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3] = (float)x;
+				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3 + 1] = (float) y;
+				voxelPoints[(x*voxelgridsize *voxelgridsize + y*voxelgridsize + z) * 3 + 2] = (float) z;
 			}
 		}
 	}
 
-
-	// Array buffer
+	//
+	// Bind voxelGrid to vertex object buffer
+	//
 	glBindBuffer(GL_ARRAY_BUFFER, vboTerrain);
 	bonobo::checkForErrors();
 	glBufferData(GL_ARRAY_BUFFER, voxelgridsize * voxelgridsize *voxelgridsize * 3 * sizeof(float), voxelPoints, GL_STATIC_DRAW);
 	bonobo::checkForErrors();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	//
 	// Generate and Bind Vertex Array Object
+	//
 	GLuint vao = 0u;
 	glGenVertexArrays(1, &vao);
 	bonobo::checkForErrors();
@@ -332,14 +309,8 @@ void Terrain::run()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 	bonobo::checkForErrors();
 	
-
-	
-	
-	
-	
-	
 	//
-	//Ocean test:
+	//Ocean implementation, this is more the same code as in Assignment 4 in EDA221, but with several modifications in place for integration with the bonobo framework.
 	//
 	// constants
 	const int QUAD_GRID_SIZE = 150;
@@ -389,11 +360,10 @@ void Terrain::run()
 			indices[6 * indexPosition + 3] = y    *(QUAD_GRID_SIZE + 1) + x;    //bl
 			indices[6 * indexPosition + 5] = (y + 1)*(QUAD_GRID_SIZE + 1) + x + 1;//tr
 			indices[6 * indexPosition + 4] = (y + 1)*(QUAD_GRID_SIZE + 1) + x;    //tl
-			//printf("%d\n%d\n%d\n%d\n%d\n%d\n", indices[6 * indexPosition], indices[6 * indexPosition+1],indices[6 * indexPosition+2], indices[6 * indexPosition+3], indices[6 * indexPosition+4], indices[6 * indexPosition+5]);
 		}
 	}
 	
-	//Put all values in one long array, harhar
+	//Store all attributes in one array in order to easier pass to Vbo
 	const int allAttribSize = NR_VERTICES;
 	float Allattrib[allAttribSize*5];
 	for (int i = 0; i < allAttribSize; i++) {
@@ -422,9 +392,6 @@ void Terrain::run()
 	bonobo::checkForErrors();
 
 
-	
-	
-
 	// Bind the index buffer
 	glGenBuffers(1, &gIndexID);
 	bonobo::checkForErrors();
@@ -444,7 +411,6 @@ void Terrain::run()
 
 	GLuint texOcean = glGetAttribLocation(oceanShader->mId, "vTexCoord");
 	bonobo::checkForErrors();
-	//printf("%d\n", texOcean);
 	glEnableVertexAttribArray(texOcean);
 	bonobo::checkForErrors();
 	glVertexAttribPointer(texOcean, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -461,14 +427,11 @@ void Terrain::run()
 
 	delete[] indices;
 	
-
-	
-	
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
 
-	//create testure sampler
+	//create testure sampler, one for each object
 	bonobo::Sampler *sampler = bonobo::loadSampler();
 	bonobo::Sampler *oceanSampler = bonobo::loadSampler();
 
@@ -495,36 +458,31 @@ void Terrain::run()
 
 		glDepthFunc(GL_LESS);
 
-		//printf("Camera Rotation no:1: %f, no:2: %f\n", (mCamera.mRotation).x, (mCamera.mRotation).y);
-
 
 		//
-		//Pass 2: Generate terrain
+		//DrawCall 1: terrain
 		//
 		bonobo::setRenderTarget(0, 0);
 		glUseProgram(terrainShader->mId);
 		glViewport(0, 0, RES_X, RES_Y);
-		glClearColor(0.7, 0.8, 0.9, 1.0f);//glClearColor(0.53f, 0.8f, 0.98f, 1.0f);
-		
+		glClearColor(0.7, 0.8, 0.9, 1.0f);		
 		glClearDepthf(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bonobo::checkForErrors();
+		
 		glBindTexture(GL_TEXTURE_3D, densityTexture3D->mId);
 		glBindTexture(GL_TEXTURE_1D, edgeTexture->mId);
+		//set uniforms
 		bonobo::setUniform(*terrainShader, "model_to_clip_matrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
+		//bind textures
 		bonobo::bindTextureSampler(*terrainShader, "density_texture", 0, *densityTexture3D, *sampler);
 		bonobo::bindTextureSampler(*terrainShader, "edge_texture", 1, *edgeTexture, *sampler);
 		bonobo::bindTextureSampler(*terrainShader, "clouds", 2, *cloudTexture, *sampler);
-		//Probably better way of doing this, but tired!!
-		bonobo::setUniform(*terrainShader, "origin_x", originPoint[0]);
-		bonobo::setUniform(*terrainShader, "origin_y", originPoint[1]);
-		bonobo::setUniform(*terrainShader, "origin_z", originPoint[2]);
-		bonobo::setUniform(*terrainShader, "ResY", (float) RES_Y);
-		bonobo::setUniform(*terrainShader, "ResX", (float) RES_X);
 
+		//bind appropriate VAO
 		glBindVertexArray(vao);
 		bonobo::checkForErrors();
-
+		//bind VBO
 		glBindBuffer(GL_ARRAY_BUFFER, vboTerrain);
 		bonobo::checkForErrors();
 		glEnableVertexAttribArray(0);
@@ -533,12 +491,11 @@ void Terrain::run()
 		bonobo::checkForErrors();
 
 		GLStateInspection::CaptureSnapshot("Terrain");
-		
-	//	glDrawArrays(GL_TRIANGLES, 0, 3);
-		
 		glDrawArrays(GL_POINTS, 0, nbr_voxelPoints);
 		bonobo::checkForErrors();
 
+
+		//release resources
 		glDisableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -557,40 +514,36 @@ void Terrain::run()
 		bonobo::checkForErrors();
 
 
-		//Render Ocean
+		//
+		//DrawCall 2: Ocean
+		//
 		bonobo::setRenderTarget(0, 0);
 		bonobo::checkForErrors();
 		glUseProgram(oceanShader->mId);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_2D, BumpMapTexture->mId);
 		//glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
+
+		//set uniforms
 		bonobo::setUniform(*oceanShader, "ModelViewProjectionMatrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::setUniform(*oceanShader, "vCameraPos", mCamera.mWorld.GetTranslation());
 		bonobo::setUniform(*oceanShader, "time", float(nowTime));
+
+		//bind textures
 		bonobo::bindTextureSampler(*oceanShader, "BumpMapTexture", 0, *BumpMapTexture, *oceanSampler);
 		//bonobo::bindTextureSampler(*oceanShader, "SkyboxTexture", 1, *skyBox, *oceanSampler);
-
-		//auto match = oceanShader.mUniformLocs.find(oceanSampler);
-		//glActiveTexture(GL_TEXTURE0 + 1);
-		//auto match = oceanShader.mUniformLocs.find(oceanSampler);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
-		//glUniform1i(match->second.mLoc, 1);
-		//glBindSampler(1, (*oceanSampler).mId);
 		bonobo::checkForErrors();
 
-
-
-		bonobo::checkForErrors();
-
+		//bind appropriate VAO
 		glBindVertexArray(gVaoID);
 		bonobo::checkForErrors();
-
+		//bind IBO
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexID);
 		bonobo::checkForErrors();
 
 		glDrawElements(GL_TRIANGLES, 3 * NR_TRIANGLES, GL_UNSIGNED_INT, 0);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		
+
+		//Release resources
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		bonobo::checkForErrors();
@@ -604,11 +557,8 @@ void Terrain::run()
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		bonobo::checkForErrors();
-		//printf("CamPos: x: %f, y: %f, z: %f\n Rot: x: %f, y: %f\n\n", mCamera.mWorld.GetTranslation().x, mCamera.mWorld.GetTranslation().y, mCamera.mWorld.GetTranslation().z, mCamera.mRotation.x, mCamera.mRotation.y);
-
+		
 		// Render window
-		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
-		//Log::View::Render();
 		ImGui::Render();
 
 		window->Swap();
@@ -636,6 +586,9 @@ void Terrain::run()
 
 }
 
+//
+//Function creates an in array of values used as a lookup table by the marching cubes algorithm
+//
 int * Terrain::createLookupTable() 
 {
 	static int edges[256 * 15] = 
