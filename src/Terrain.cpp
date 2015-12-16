@@ -11,7 +11,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <../externals/Simple OpenGL Image Library/src/SOIL.h>
+//#include <../externals/Simple OpenGL Image Library/src/SOIL.h>
 
 #include "AABox.h"
 #ifndef STANDALONE_VERSION
@@ -95,11 +95,11 @@ void Terrain::run()
 
 	FPSCameraf mCamera = FPSCameraf(fPI / 4.0f, static_cast<float>(RES_X) / static_cast<float>(RES_Y), sceneScale * 0.01f, sceneScale * 10.0f);
 	mCamera.mWorld.SetTranslate(v3f(51.3, 18.2, 15.0));//v3f(16.f, 20.f, 33.f));//v3f(sceneScale * 0.17f, sceneScale * 0.03f, 0.0f));
-	mCamera.mRotation.x = 1.5;// / 2.0f;
-	mCamera.mRotation.y = -0.3;
+	mCamera.mRotation.x = fPI/2;// / 2.0f;
+	mCamera.mRotation.y = -fPI / 10;
 	
-	mCamera.mWorld.SetRotateY(1.5);//fPI / 2.0f);
-	mCamera.mWorld.PreRotateX(5.9);
+	mCamera.mWorld.PreRotateY(fPI/2);//fPI / 2.0f);
+	mCamera.mWorld.PreRotateX(-fPI / 10);
 	
 
 	mCamera.mMouseSensitivity = 0.003f;
@@ -110,7 +110,7 @@ void Terrain::run()
 	bonobo::Texture *densityTexture3D = new bonobo::Texture();
 	bonobo::Texture *cloudTexture = bonobo::loadTexture2D(RESOURCES_PATH("Clouds_diff.png"));
 	bonobo::Texture *BumpMapTexture = bonobo::loadTexture2D(RESOURCES_PATH("waves.png"));
-	bonobo::Texture *skyBox = new bonobo::Texture();
+	//bonobo::Texture *skyBox = new bonobo::Texture();
 
 
 
@@ -140,9 +140,14 @@ void Terrain::run()
 
 
 	//Create CubeMap, probably not working, but hey; no errors!
-	glGenTextures(1, &skyBox->mId);
+	/*glGenTextures(1, &skyBox->mId);
 	bonobo::checkForErrors();
 	glBindTexture(GL_TEXTURE_CUBE_MAP,skyBox->mId);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	int width=512, height=512;
 	unsigned char* image =
 		SOIL_load_image("cloudyhills_posx.png", &width, &height, 0, SOIL_LOAD_RGB);
@@ -180,7 +185,7 @@ void Terrain::run()
 	
 	skyBox->mTarget = bonobo::TEXTURE_CUBE_MAP;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	SOIL_free_image_data(image);
+	SOIL_free_image_data(image);*/
 	
 
 	//Create Mountain
@@ -558,12 +563,23 @@ void Terrain::run()
 		glUseProgram(oceanShader->mId);
 		bonobo::checkForErrors();
 		glBindTexture(GL_TEXTURE_2D, BumpMapTexture->mId);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
 		bonobo::setUniform(*oceanShader, "ModelViewProjectionMatrix", cast<f32>(mCamera.GetWorldToClipMatrix()));
 		bonobo::setUniform(*oceanShader, "vCameraPos", mCamera.mWorld.GetTranslation());
 		bonobo::setUniform(*oceanShader, "time", float(nowTime));
 		bonobo::bindTextureSampler(*oceanShader, "BumpMapTexture", 0, *BumpMapTexture, *oceanSampler);
-		bonobo::bindTextureSampler(*oceanShader, "SkyboxTexture", 1, *skyBox, *oceanSampler);
+		//bonobo::bindTextureSampler(*oceanShader, "SkyboxTexture", 1, *skyBox, *oceanSampler);
+
+		//auto match = oceanShader.mUniformLocs.find(oceanSampler);
+		//glActiveTexture(GL_TEXTURE0 + 1);
+		//auto match = oceanShader.mUniformLocs.find(oceanSampler);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox->mId);
+		//glUniform1i(match->second.mLoc, 1);
+		//glBindSampler(1, (*oceanSampler).mId);
+		bonobo::checkForErrors();
+
+
+
 		bonobo::checkForErrors();
 
 		glBindVertexArray(gVaoID);
@@ -588,7 +604,7 @@ void Terrain::run()
 		bonobo::checkForErrors();
 		glBindVertexArray(0u);
 		bonobo::checkForErrors();
-		printf("CamPos: x: %f, y: %f, z: %f\n Rot: x: %f, y: %f\n\n", mCamera.mWorld.GetTranslation().x, mCamera.mWorld.GetTranslation().y, mCamera.mWorld.GetTranslation().z, mCamera.mRotation.x, mCamera.mRotation.y);
+		//printf("CamPos: x: %f, y: %f, z: %f\n Rot: x: %f, y: %f\n\n", mCamera.mWorld.GetTranslation().x, mCamera.mWorld.GetTranslation().y, mCamera.mWorld.GetTranslation().z, mCamera.mRotation.x, mCamera.mRotation.y);
 
 		// Render window
 		GLStateInspection::View::Render(); // Disabling this turns off the GLStateInspection console within the render window
